@@ -1,0 +1,7 @@
+<resources>
+    <color name="bg">#FF0E1117</color>
+    <style name="Theme.Lexia" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:colorAccent">#FF2E9BFF</item>
+    </style>
+</resources>
