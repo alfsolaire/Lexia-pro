@@ -38,13 +38,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.lexia.player.data.Content
+import com.lexia.player.data.Prefs
 import com.lexia.player.data.SeriesDetails
 import com.lexia.player.data.Session
 import kotlinx.coroutines.CancellationException
 
 @Composable
-fun SeriesScreen(series: Content, onPlay: (List<Content>, Int) -> Unit) {
+fun SeriesScreen(series: Content, prefs: Prefs, onPlay: (List<Content>, Int) -> Unit) {
     val provider = Session.provider ?: return
+    val resumeTick = rememberResumeTick()
+    val progress = remember(resumeTick) { prefs.resumeProgress() }
     var details by remember { mutableStateOf<SeriesDetails?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var reloadKey by remember { mutableIntStateOf(0) }
@@ -119,13 +122,15 @@ fun SeriesScreen(series: Content, onPlay: (List<Content>, Int) -> Unit) {
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Row(Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                                AsyncImage(
-                                    model = ep.cover ?: series.logo,
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.size(width = 160.dp, height = 90.dp)
-                                        .clip(RoundedCornerShape(6.dp)).background(Panel),
-                                )
+                                Box(Modifier.size(width = 160.dp, height = 90.dp).clip(RoundedCornerShape(6.dp))) {
+                                    AsyncImage(
+                                        model = ep.cover ?: series.logo,
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize().background(Panel),
+                                    )
+                                    progress[ep.url]?.let { WatchProgress(it, Modifier.align(Alignment.BottomStart)) }
+                                }
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,7 +20,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.json.JSONException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -54,6 +61,7 @@ fun FocusCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onMenu: (() -> Unit)? = null,
+    onFocus: (() -> Unit)? = null,
     selected: Boolean = false,
     focusScale: Float = 1.05f,
     shape: Shape = RoundedCornerShape(10.dp),
@@ -75,7 +83,10 @@ fun FocusCard(
             .background(background, shape)
             .border(2.dp, if (focused) Accent else Color.Transparent, shape)
             .clip(shape)
-            .onFocusChanged { focused = it.isFocused }
+            .onFocusChanged {
+                focused = it.isFocused
+                if (it.isFocused) onFocus?.invoke()
+            }
             .onPreviewKeyEvent { event ->
                 if (onMenu != null && event.key == Key.Menu) {
                     if (event.type == KeyEventType.KeyUp) onMenu()
@@ -156,4 +167,27 @@ fun errorText(e: Throwable): String = when (e) {
     is JSONException -> "Réponse inattendue du serveur."
     is IllegalArgumentException -> "Adresse invalide."
     else -> e.message ?: e.javaClass.simpleName
+}
+
+/** Change de valeur à chaque retour sur l'écran (ex. après la lecture d'une vidéo), pour relire l'historique. */
+@Composable
+fun rememberResumeTick(): Int {
+    val owner = LocalLifecycleOwner.current
+    var tick by remember { mutableIntStateOf(0) }
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) tick++
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    return tick
+}
+
+/** Fine barre d'avancement (lecture déjà commencée). */
+@Composable
+fun WatchProgress(fraction: Float, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().height(4.dp).background(Color(0x66000000))) {
+        Box(Modifier.fillMaxWidth(fraction.coerceIn(0f, 1f)).fillMaxHeight().background(Accent))
+    }
 }

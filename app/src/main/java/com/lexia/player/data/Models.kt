@@ -35,6 +35,9 @@ data class Episode(
 
 data class SeriesDetails(val plot: String?, val cover: String?, val seasons: Map<Int, List<Episode>>)
 
+/** Une émission du guide des programmes. Heures en millisecondes. */
+data class EpgEntry(val title: String, val description: String?, val start: Long, val end: Long)
+
 data class AccountInfo(
     val username: String,
     val status: String?,
@@ -48,6 +51,9 @@ interface IptvProvider {
     suspend fun categories(type: ContentType): List<Category>
     suspend fun items(type: ContentType): List<Content>
     suspend fun seriesDetails(series: Content): SeriesDetails
+
+    /** Programme en cours et suivants d'une chaîne (vide si le fournisseur n'a pas de guide). */
+    suspend fun shortEpg(channel: Content): List<EpgEntry> = emptyList()
 }
 
 fun favoriteKey(item: Content) = "${item.type}:${item.id}"

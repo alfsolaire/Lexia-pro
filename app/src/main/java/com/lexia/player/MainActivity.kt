@@ -19,6 +19,7 @@ import com.lexia.player.data.Prefs
 import com.lexia.player.data.Session
 import com.lexia.player.player.PlayQueue
 import com.lexia.player.player.PlayerActivity
+import com.lexia.player.ui.AccountsScreen
 import com.lexia.player.ui.Bg
 import com.lexia.player.ui.BrowseScreen
 import com.lexia.player.ui.HomeScreen
@@ -29,7 +30,8 @@ import com.lexia.player.ui.SeriesScreen
 private sealed interface Screen {
     val key: String
 
-    data object Login : Screen { override val key = "login" }
+    data class Login(val blank: Boolean) : Screen { override val key get() = "login-$blank" }
+    data object Accounts : Screen { override val key = "accounts" }
     data object Home : Screen { override val key = "home" }
     data class Browse(val type: ContentType) : Screen { override val key get() = "browse-$type" }
     data class Series(val series: Content) : Screen { override val key get() = "series-${series.id}" }
@@ -53,7 +55,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun App(prefs: Prefs, onPlay: (List<Content>, Int) -> Unit) {
     val stack = remember {
-        mutableStateListOf<Screen>(if (Session.restore(prefs)) Screen.Home else Screen.Login)
+        val start = when {
+            Session.restore(prefs) -> Screen.Home
+            prefs.accounts().isNotEmpty() -> Screen.Accounts
+            else -> Screen.Login(blank = false)
+        }
+        mutableStateListOf(start)
     }
     val stateHolder = rememberSaveableStateHolder()
     val current = stack.last()
@@ -68,17 +75,25 @@ private fun App(prefs: Prefs, onPlay: (List<Content>, Int) -> Unit) {
     Box(Modifier.fillMaxSize().background(Bg)) {
         stateHolder.SaveableStateProvider(current.key) {
             when (current) {
-                Screen.Login -> LoginScreen(prefs, onLoggedIn = { reset(Screen.Home) })
+                is Screen.Login -> LoginScreen(prefs, current.blank, onLoggedIn = { reset(Screen.Home) })
+                Screen.Accounts -> AccountsScreen(
+                    prefs,
+                    onSwitched = { reset(Screen.Home) },
+                    onAdd = { stack.add(Screen.Login(blank = true)) },
+                    onCurrentRemoved = {
+                        reset(if (prefs.accounts().isEmpty()) Screen.Login(blank = true) else Screen.Accounts)
+                    },
+                )
                 Screen.Home -> HomeScreen(
                     prefs,
                     onOpen = { stack.add(Screen.Browse(it)) },
-                    onLogout = { reset(Screen.Login) },
+                    onAccounts = { stack.add(Screen.Accounts) },
                 )
                 is Screen.Browse -> BrowseScreen(
                     current.type, prefs, onPlay,
                     onOpenSeries = { stack.add(Screen.Series(it)) },
                 )
-                is Screen.Series -> SeriesScreen(current.series, onPlay)
+                is Screen.Series -> SeriesScreen(current.series, prefs, onPlay)
             }
         }
     }

@@ -33,8 +33,9 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onLogout: () -> Unit) {
+fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Unit) {
     val config = remember { prefs.load() }
+    val accountName = remember { prefs.currentAccount?.name }
     var provider by remember { mutableStateOf(Session.provider) }
     var account by remember { mutableStateOf<AccountInfo?>(null) }
     var liveFormat by remember { mutableStateOf(prefs.liveFormat) }
@@ -53,7 +54,10 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onLogout: () -> Unit
 
     Column(Modifier.fillMaxSize().background(Bg).padding(horizontal = 56.dp, vertical = 40.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Lexia Player", color = TextMain, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+            Column {
+                Text(APP_TITLE, color = TextMain, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                accountName?.let { Text("Compte : $it", color = Accent, fontSize = 16.sp) }
+            }
             Spacer(Modifier.weight(1f))
             account?.let { Text(accountLine(it), color = TextDim, fontSize = 16.sp) }
         }
@@ -74,11 +78,7 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onLogout: () -> Unit
                 })
             }
             TvButton("Actualiser les listes", { rebuild() })
-            TvButton("Se déconnecter", {
-                prefs.logout()
-                Session.provider = null
-                onLogout()
-            })
+            TvButton("Comptes", onAccounts)
         }
     }
 

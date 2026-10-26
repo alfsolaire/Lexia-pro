@@ -45,13 +45,14 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 @Composable
-fun LoginScreen(prefs: Prefs, onLoggedIn: () -> Unit) {
-    val saved = remember { prefs.load() }
-    var mode by rememberSaveable { mutableStateOf(saved?.mode ?: LoginConfig.MODE_XTREAM) }
-    var server by rememberSaveable { mutableStateOf(saved?.server.orEmpty()) }
-    var username by rememberSaveable { mutableStateOf(saved?.username.orEmpty()) }
-    var password by rememberSaveable { mutableStateOf(saved?.password.orEmpty()) }
-    var m3uUrl by rememberSaveable { mutableStateOf(saved?.m3uUrl.orEmpty()) }
+fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
+    val saved = remember { if (blank) null else prefs.currentAccount }
+    var name by rememberSaveable { mutableStateOf(saved?.name.orEmpty()) }
+    var mode by rememberSaveable { mutableStateOf(saved?.config?.mode ?: LoginConfig.MODE_XTREAM) }
+    var server by rememberSaveable { mutableStateOf(saved?.config?.server.orEmpty()) }
+    var username by rememberSaveable { mutableStateOf(saved?.config?.username.orEmpty()) }
+    var password by rememberSaveable { mutableStateOf(saved?.config?.password.orEmpty()) }
+    var m3uUrl by rememberSaveable { mutableStateOf(saved?.config?.m3uUrl.orEmpty()) }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -71,7 +72,7 @@ fun LoginScreen(prefs: Prefs, onLoggedIn: () -> Unit) {
             try {
                 val provider = Session.build(config, prefs)
                 provider.accountInfo()
-                prefs.save(config)
+                prefs.saveAccount(name.trim().ifEmpty { config.defaultName() }, config)
                 Session.provider = provider
                 onLoggedIn()
             } catch (e: CancellationException) {
@@ -89,8 +90,8 @@ fun LoginScreen(prefs: Prefs, onLoggedIn: () -> Unit) {
             modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 40.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            Text("Lexia Player", color = TextMain, fontSize = 46.sp, fontWeight = FontWeight.Bold)
-            Text("Lecteur IPTV pour Fire TV", color = Accent, fontSize = 20.sp)
+            Text(APP_TITLE, color = TextMain, fontSize = 46.sp, fontWeight = FontWeight.Bold)
+            Text(APP_SUBTITLE, color = Accent, fontSize = 20.sp)
             Spacer(Modifier.height(28.dp))
             Text(
                 "Cette application est uniquement un lecteur : elle ne fournit aucune chaîne ni aucun contenu. " +
@@ -110,7 +111,8 @@ fun LoginScreen(prefs: Prefs, onLoggedIn: () -> Unit) {
                 )
                 TvButton("Lien M3U", { mode = LoginConfig.MODE_M3U }, selected = mode == LoginConfig.MODE_M3U)
             }
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
+            Field("Nom du compte (facultatif, ex. Salon)", name, { name = it })
             if (mode == LoginConfig.MODE_XTREAM) {
                 Field("Adresse du serveur (ex. http://exemple.com:8080)", server, { server = it }, KeyboardType.Uri)
                 Field("Nom d'utilisateur", username, { username = it })

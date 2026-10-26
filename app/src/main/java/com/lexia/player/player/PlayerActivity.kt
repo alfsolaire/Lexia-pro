@@ -13,6 +13,8 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
+import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
@@ -23,8 +25,16 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
+import com.lexia.player.data.Content
 import com.lexia.player.data.ContentType
 import com.lexia.player.data.Http
+import com.lexia.player.data.Prefs
+import com.lexia.player.data.Session
+import com.lexia.player.data.favoriteKey
+import com.lexia.player.ui.timeRange
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class)
 class PlayerActivity : ComponentActivity() {
@@ -32,8 +42,17 @@ class PlayerActivity : ComponentActivity() {
     private lateinit var playerView: PlayerView
     private lateinit var overlay: TextView
     private var player: ExoPlayer? = null
+    private lateinit var prefs: Prefs
+    private var current: Content? = null
+    private var epgJob: Job? = null
     private val handler = Handler(Looper.getMainLooper())
     private val hideOverlay = Runnable { overlay.visibility = View.GONE }
+    private val periodicSave = object : Runnable {
+        override fun run() {
+            saveProgress()
+            handler.postDelayed(this, SAVE_INTERVAL_MS)
+        }
+    }
 
     private val isLive: Boolean
         get() = PlayQueue.items.getOrNull(PlayQueue.index)?.type == ContentType.LIVE
@@ -45,6 +64,7 @@ class PlayerActivity : ComponentActivity() {
             return
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        prefs = Prefs(this)
 
         playerView = PlayerView(this).apply {
             setBackgroundColor(Color.BLACK)
@@ -95,10 +115,11 @@ class PlayerActivity : ComponentActivity() {
             }
 
             override fun onPlaybackStateChanged(state: Int) {
+                if (state != Player.STATE_ENDED || isLive) return
+                current?.url?.let { prefs.clearResume(it) }
+                current = null
                 // Enchaîne automatiquement l'épisode suivant.
-                if (state == Player.STATE_ENDED && !isLive && PlayQueue.index + 1 < PlayQueue.items.size) {
-                    play(PlayQueue.index + 1)
-                }
+                if (PlayQueue.index + 1 < PlayQueue.items.size) play(PlayQueue.index + 1)
             }
         })
         exo.playWhenReady = true
@@ -106,9 +127,13 @@ class PlayerActivity : ComponentActivity() {
         playerView.player = exo
         playerView.requestFocus()
         play(PlayQueue.index)
+        handler.postDelayed(periodicSave, SAVE_INTERVAL_MS)
     }
 
     private fun releasePlayer() {
+        saveProgress()
+        epgJob?.cancel()
+        handler.removeCallbacks(periodicSave)
         handler.removeCallbacks(hideOverlay)
         player?.release()
         player = null
@@ -122,14 +147,72 @@ class PlayerActivity : ComponentActivity() {
         PlayQueue.index = i
         val item = items[i]
         val url = item.url ?: return
+        saveProgress()
+        current = item
+        // Les épisodes sont mémorisés via leur série (au moment de l'ouvrir).
+        if (item.type != ContentType.SERIES) prefs.addRecent(item.type, favoriteKey(item))
+
         val builder = MediaItem.Builder().setUri(url)
         if (url.contains(".m3u8", ignoreCase = true)) builder.setMimeType(MimeTypes.APPLICATION_M3U8)
+        val resumeAt = if (item.type == ContentType.LIVE) null else prefs.resumePosition(url)
         player?.run {
-            setMediaItem(builder.build())
+            if (resumeAt != null) setMediaItem(builder.build(), resumeAt) else setMediaItem(builder.build())
             prepare()
             play()
         }
-        showOverlay(if (item.type == ContentType.LIVE) "${i + 1}.  ${item.name}" else item.name, 3500)
+
+        epgJob?.cancel()
+        if (item.type == ContentType.LIVE) {
+            val title = "${i + 1}.  ${item.name}"
+            showOverlay(title, 4000)
+            val provider = Session.provider ?: return
+            epgJob = lifecycleScope.launch {
+                val epg = try {
+                    provider.shortEpg(item)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    emptyList()
+                }
+                val now = System.currentTimeMillis()
+                val nowShowing = epg.firstOrNull { it.start <= now && it.end > now }
+                val next = epg.firstOrNull { it.start >= (nowShowing?.end ?: now) }
+                if (nowShowing == null && next == null) return@launch
+                val text = buildString {
+                    append(title)
+                    nowShowing?.let { append("\nEn cours : ${it.title}  (${timeRange(it)})") }
+                    next?.let { append("\nEnsuite : ${it.title}  (${timeRange(it)})") }
+                }
+                showOverlay(text, 6000)
+            }
+        } else if (resumeAt != null) {
+            showOverlay("${item.name}\nReprise à ${formatTime(resumeAt)}", 4000)
+        } else {
+            showOverlay(item.name, 3500)
+        }
+    }
+
+    /** Mémorise la position d'un film ou d'un épisode pour reprendre plus tard. */
+    private fun saveProgress() {
+        val item = current ?: return
+        if (item.type == ContentType.LIVE) return
+        val url = item.url ?: return
+        val p = player ?: return
+        val duration = p.duration
+        if (duration == C.TIME_UNSET || duration <= 0) return
+        val position = p.currentPosition
+        when {
+            position >= duration * 0.95 -> prefs.clearResume(url)
+            position > MIN_RESUME_MS -> prefs.saveResume(url, position, duration)
+        }
+    }
+
+    private fun formatTime(ms: Long): String {
+        val total = ms / 1000
+        val h = total / 3600
+        val m = (total % 3600) / 60
+        val s = total % 60
+        return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
     }
 
     private fun showOverlay(text: String, durationMs: Long) {
@@ -154,5 +237,10 @@ class PlayerActivity : ComponentActivity() {
             }
         }
         return super.dispatchKeyEvent(event)
+    }
+
+    companion object {
+        private const val SAVE_INTERVAL_MS = 15_000L
+        private const val MIN_RESUME_MS = 30_000L
     }
 }

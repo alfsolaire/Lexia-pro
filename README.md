@@ -1,8 +1,8 @@
-# Lexia Player : lecteur IPTV pour Fire TV
+# Alf TV Pro IPTV : lecteur IPTV pour Fire TV
 
 Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dans l'esprit de *IPTV Smarters*.
 
-> **Important :** Lexia Player est **uniquement un lecteur**. Elle ne contient et ne fournit aucune chaîne, aucun film ni aucune série.
+> **Important :** Alf TV Pro IPTV est **uniquement un lecteur**. Elle ne contient et ne fournit aucune chaîne, aucun film ni aucune série.
 > L'utilisateur saisit les identifiants de l'abonnement fourni par son propre fournisseur, qui doit disposer des droits de diffusion.
 
 ## Fonctionnalités
@@ -13,6 +13,11 @@ Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dan
 - **Séries** : saisons et épisodes, enchaînement automatique de l'épisode suivant.
 - **Lecteur** : MPEG-TS, HLS, MP4, MKV… avec changement de chaîne par ▲/▼ ou CH+/CH−.
 - **Favoris** : touche **☰ (Menu)** de la télécommande sur une chaîne ou une affiche.
+- **Guide des programmes (EPG)** : émission en cours (avec avancement) et suivante, dans la liste des chaînes et à chaque changement de chaîne (comptes Xtream).
+- **Reprise de lecture** : films et épisodes reprennent là où ils ont été arrêtés (barre d'avancement sur les affiches).
+- **Dernières chaînes regardées** / **Récemment vus** : catégorie dédiée en haut de la liste.
+- **Plusieurs comptes** : bouton *Comptes* sur l'accueil ; favoris et historique propres à chaque compte.
+- **Classement des catégories** : tri A → Z ou ordre du serveur, et ☰ sur une catégorie pour l'épingler en haut.
 - Infos du compte : date d'expiration, nombre de connexions.
 - Format du direct au choix (MPEG-TS ou HLS) si un serveur pose problème.
 - Interface entièrement pilotable à la télécommande.
@@ -43,7 +48,7 @@ Compilation locale (Android Studio ou SDK Android installé) :
      adb connect <IP-de-la-Fire-TV>:5555
      adb install -r app-release.apk
      ```
-3. L'application apparaît dans *Vos applications et chaînes*.
+3. **Alf TV Pro IPTV** apparaît dans *Vos applications et chaînes*.
 
 ## Structure
 

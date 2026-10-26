@@ -1,6 +1,7 @@
 package com.lexia.player.data
 
 import android.net.Uri
+import android.util.Base64
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.json.JSONArray
@@ -22,6 +23,7 @@ class XtreamProvider(
     private val pass = Uri.encode(password)
     private val mutex = Mutex()
     private val cache = mutableMapOf<ContentType, List<Content>>()
+    private val epgCache = mutableMapOf<String, Pair<Long, List<EpgEntry>>>()
 
     private fun api(action: String? = null, extra: String = ""): String {
         val u = URLEncoder.encode(username, "UTF-8")
@@ -105,7 +107,38 @@ class XtreamProvider(
         return SeriesDetails(info?.str("plot"), info?.str("cover"), seasons)
     }
 
+    override suspend fun shortEpg(channel: Content): List<EpgEntry> {
+        if (channel.type != ContentType.LIVE) return emptyList()
+        val now = System.currentTimeMillis()
+        val cached = epgCache[channel.id]
+        val entries = if (cached != null && now - cached.first < EPG_CACHE_MS) {
+            cached.second
+        } else {
+            val json = JSONTokener(Http.get(api("get_short_epg", "&stream_id=${channel.id}&limit=4"))).nextValue() as? JSONObject
+            val listings = json?.optJSONArray("epg_listings")?.objects().orEmpty().mapNotNull { e ->
+                val start = e.str("start_timestamp")?.toLongOrNull() ?: return@mapNotNull null
+                val end = e.str("stop_timestamp")?.toLongOrNull() ?: return@mapNotNull null
+                EpgEntry(decodeBase64(e.str("title")) ?: "Sans titre", decodeBase64(e.str("description")), start * 1000, end * 1000)
+            }.sortedBy { it.start }
+            epgCache[channel.id] = now to listings
+            listings
+        }
+        return entries.filter { it.end > now }
+    }
+
     companion object {
+        private const val EPG_CACHE_MS = 5 * 60 * 1000L
+
+        /** Les panneaux Xtream encodent titres et descriptions du guide en Base64. */
+        private fun decodeBase64(value: String?): String? {
+            if (value == null) return null
+            return try {
+                String(Base64.decode(value, Base64.DEFAULT), Charsets.UTF_8).trim().ifEmpty { null }
+            } catch (e: IllegalArgumentException) {
+                value
+            }
+        }
+
         fun normalizeServer(raw: String): String {
             var s = raw.trim().trimEnd('/')
             if (!s.startsWith("http://", true) && !s.startsWith("https://", true)) s = "http://$s"
