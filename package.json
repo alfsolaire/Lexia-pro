@@ -1,0 +1,13 @@
+{
+  "name": "lexia-tv",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lexia sur Fire TV : préparation d'audience, prompteur de plaidoirie, diffusion depuis le téléphone, gestion locative.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1218">
+  <title>Lexia — Télécommande</title>
+  <link rel="stylesheet" href="remote.css">
+</head>
+<body>
+  <header>
+    <div>
+      <div class="brand">Lexia <span>télécommande</span></div>
+      <div id="dossier" class="muted"></div>
+    </div>
+    <div id="status" class="status">…</div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="pieces">Pièces</button>
+    <button class="tab" data-tab="bombes">Bombes</button>
+    <button class="tab" data-tab="chrono">Chronologie</button>
+    <button class="tab" data-tab="pad">Télécommande</button>
+  </nav>
+
+  <input id="search" type="search" placeholder="Rechercher une pièce, une citation…" autocomplete="off">
+
+  <main>
+    <section id="list" class="list"></section>
+
+    <section id="pad" class="pad" hidden>
+      <div class="views">
+        <button data-view="home">Accueil</button>
+        <button data-view="prep">Préparation</button>
+        <button data-view="prompteur">Prompteur</button>
+        <button data-view="locatif">Locatif</button>
+        <button data-view="attente">Diffusion</button>
+      </div>
+      <div class="dpad">
+        <button data-key="up" class="up">▲</button>
+        <button data-key="left" class="left">◀</button>
+        <button data-key="ok" class="ok">OK</button>
+        <button data-key="right" class="right">▶</button>
+        <button data-key="down" class="down">▼</button>
+      </div>
+      <div class="media">
+        <button data-key="rew">⏪</button>
+        <button data-key="play">⏯</button>
+        <button data-key="ff">⏩</button>
+        <button data-key="back">Retour</button>
+      </div>
+    </section>
+  </main>
+
+  <button id="hide" class="hide">Fermer l'affichage sur la TV</button>
+  <div id="toast" role="status"></div>
+
+  <script src="common.js"></script>
+  <script src="remote.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+/* Lexia TV — pensé pour un écran 16:9 vu à 3 m.
+   Toutes les tailles sont en rem, et 1 rem = 1/80 de la largeur :
+   le rendu est identique en 960×540 (Silk) comme en 1920×1080. */
+
+:root {
+  --bg: #0f1218;
+  --panel: #181d26;
+  --panel-2: #212835;
+  --text: #eef1f6;
+  --muted: #9aa3b2;
+  --accent: #e0b25c;
+  --demandeur: #5fb3a1;
+  --adverse: #e0716b;
+  --ok: #6cc28a;
+  --warn: #e7a94a;
+  --info: #6ea8e6;
+  font-size: calc(100vw / 80);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+/* Marge de sécurité « overscan » des téléviseurs */
+.view {
+  position: absolute;
+  inset: 0;
+  padding: 2.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 650; }
+
+.hint { color: var(--muted); font-size: 1rem; }
+.hint strong { color: var(--text); }
+.empty { color: var(--muted); font-size: 1.6rem; margin: auto; }
+
+/* ---------- Accueil ---------- */
+.home-header { display: flex; justify-content: space-between; align-items: flex-end; }
+.brand { font-size: 3rem; font-weight: 750; letter-spacing: -0.03em; }
+.brand span { color: var(--accent); }
+.subtitle { color: var(--muted); font-size: 1.2rem; margin-top: 0.3rem; }
+.countdown { text-align: right; }
+.countdown strong { display: block; font-size: 2.6rem; color: var(--accent); }
+.countdown span { color: var(--muted); font-size: 1.1rem; }
+
+.tiles {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1.5rem;
+}
+.tile {
+  all: unset;
+  cursor: pointer;
+  background: var(--panel);
+  border-radius: 1rem;
+  padding: 2rem 2.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  border: 0.2rem solid transparent;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.tile.focused { border-color: var(--accent); background: var(--panel-2); transform: scale(1.02); }
+.tile-icon { font-size: 3rem; margin-bottom: auto; }
+.tile-title { font-size: 2rem; font-weight: 650; }
+.tile-desc { color: var(--muted); font-size: 1.2rem; }
+
+/* ---------- Cartes (préparation + diffusion) ---------- */
+.tabs { display: flex; gap: 1rem; }
+.tab { padding: 0.5rem 1.2rem; border-radius: 99rem; color: var(--muted); font-size: 1.2rem; background: var(--panel); }
+.tab small { opacity: 0.7; margin-left: 0.3rem; }
+.tab.active { background: var(--accent); color: #1a1408; font-weight: 650; }
+
+.stage { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+.card {
+  width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  background: var(--panel);
+  border-radius: 1.2rem;
+  padding: 2.4rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.card h2 { font-size: 2.6rem; line-height: 1.15; }
+.eyebrow { color: var(--muted); font-size: 1.15rem; display: flex; align-items: center; gap: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.lead { font-size: 1.7rem; line-height: 1.4; margin: 0; }
+.note { font-size: 1.35rem; color: var(--muted); margin: 0; }
+blockquote {
+  margin: 0;
+  font-size: 1.9rem;
+  line-height: 1.4;
+  font-style: italic;
+  border-left: 0.35rem solid var(--accent);
+  padding-left: 1.4rem;
+}
+.camp-adverse blockquote { border-color: var(--adverse); }
+.camp-demandeur blockquote { border-color: var(--demandeur); }
+.piece-image { max-height: 22rem; max-width: 100%; object-fit: contain; border-radius: 0.6rem; align-self: center; }
+
+.badge { padding: 0.25rem 0.8rem; border-radius: 0.4rem; font-weight: 650; letter-spacing: 0.02em; text-transform: none; }
+.badge-demandeur { background: var(--demandeur); color: #08201b; }
+.badge-adverse { background: var(--adverse); color: #2a0b09; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.chip { font-size: 1.1rem; padding: 0.4rem 0.9rem; border-radius: 0.5rem; background: var(--panel-2); border-left: 0.3rem solid var(--muted); }
+.chip-demandeur { border-color: var(--demandeur); }
+.chip-adverse { border-color: var(--adverse); }
+
+.duel { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.duel-side { background: var(--panel-2); border-radius: 0.8rem; padding: 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.duel-ref { font-size: 1.1rem; font-weight: 600; }
+.duel-side blockquote { font-size: 1.5rem; }
+.duel-adverse blockquote { border-color: var(--adverse); }
+.duel-realite blockquote { border-color: var(--demandeur); }
+.punchline { font-size: 1.9rem; font-weight: 650; color: var(--accent); margin: 0.4rem 0 0; line-height: 1.35; }
+
+.progress { display: flex; justify-content: space-between; align-items: center; }
+.dots { display: flex; gap: 0.5rem; }
+.dots i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--panel-2); }
+.dots i.on { background: var(--accent); }
+
+/* Mode agrandi : plein écran, typographie plus grosse */
+.view-prep.zoom .tabs, .view-prep.zoom .progress { display: none; }
+.view-prep.zoom .card { padding: 3rem 3.6rem; }
+.view-prep.zoom .card h2 { font-size: 3.2rem; }
+.view-prep.zoom blockquote { font-size: 2.5rem; }
+.view-prep.zoom .duel-side blockquote { font-size: 1.9rem; }
+.view-prep.zoom .punchline { font-size: 2.4rem; }
+.view-prep.zoom .lead { font-size: 2.2rem; }
+
+/* ---------- Prompteur ---------- */
+.view-prompteur { padding-top: 1.5rem; padding-bottom: 1.5rem; gap: 1rem; }
+.prompt-hud { display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; color: var(--muted); }
+.hud-acte { display: flex; gap: 1.2rem; align-items: baseline; color: var(--text); font-size: 1.4rem; }
+.hud-acte strong { font-variant-numeric: tabular-nums; font-size: 1.8rem; color: var(--ok); }
+.hud-acte strong.over { color: var(--adverse); }
+.hud-meta { display: flex; gap: 2rem; }
+.hud-meta strong { color: var(--text); font-variant-numeric: tabular-nums; }
+
+.prompt-viewport { position: relative; flex: 1; overflow: hidden; border-radius: 1rem; background: #07090d; }
+.reading-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 35%;
+  height: 0;
+  border-top: 0.15rem solid rgba(224, 178, 92, 0.55);
+  z-index: 1;
+  pointer-events: none;
+}
+.prompt-text { position: relative; padding: 35vh 6rem 60vh; will-change: transform; }
+.acte { margin-bottom: 4rem; opacity: 0.45; transition: opacity 0.3s; }
+.acte.current { opacity: 1; }
+.acte h2 { font-size: 1.6rem; color: var(--accent); margin-bottom: 1.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.acte p { font-size: 2.8rem; line-height: 1.45; margin: 0 0 1.6rem; }
+.acte strong { color: var(--accent); }
+.silence { display: inline-block; font-size: 1.4rem; color: var(--info); border: 0.12rem solid var(--info); border-radius: 0.5rem; padding: 0.2rem 0.8rem; font-style: normal; }
+.acte-fin h2 { color: var(--muted); }
+
+/* ---------- Gestion locative ---------- */
+.view-header { display: flex; justify-content: space-between; align-items: baseline; }
+.view-header h1 { font-size: 2.4rem; }
+.view-header span { color: var(--muted); font-size: 1.3rem; text-transform: capitalize; }
+.alert { background: #2f2a20; border-left: 0.35rem solid var(--warn); border-radius: 0.6rem; padding: 0.8rem 1.2rem; font-size: 1.2rem; }
+
+.loc-grid { flex: 1; display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.5rem; min-height: 0; }
+.loc-cards { display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
+.loc-card { background: var(--panel); border-radius: 0.9rem; padding: 1.2rem 1.5rem; border-left: 0.45rem solid var(--muted); }
+.loc-head { display: flex; justify-content: space-between; align-items: center; }
+.loc-head h2 { font-size: 1.7rem; }
+.status { font-size: 1.1rem; font-weight: 650; padding: 0.3rem 0.9rem; border-radius: 99rem; background: var(--panel-2); }
+.loc-addr { color: var(--muted); font-size: 1.05rem; margin-top: 0.2rem; }
+.loc-detail { font-size: 1.35rem; margin-top: 0.6rem; }
+.loc-tag { font-size: 1.1rem; color: var(--muted); margin-top: 0.3rem; }
+.status-occupe { border-color: var(--info); }
+.status-occupe .status { background: var(--info); color: #071624; }
+.status-arrivee { border-color: var(--ok); }
+.status-arrivee .status { background: var(--ok); color: #08200f; }
+.status-depart { border-color: var(--warn); }
+.status-depart .status { background: var(--warn); color: #241604; }
+.status-libre .status { color: var(--muted); }
+
+.agenda { background: var(--panel); border-radius: 0.9rem; padding: 1.2rem 1.5rem; display: flex; flex-direction: column; min-height: 0; }
+.agenda > h2 { font-size: 1.4rem; color: var(--muted); margin-bottom: 0.8rem; }
+.agenda-scroll { overflow-y: auto; flex: 1; scrollbar-width: none; }
+.agenda-scroll::-webkit-scrollbar { display: none; }
+.agenda-day { margin-bottom: 1.2rem; }
+.agenda-day h3 { font-size: 1.25rem; text-transform: capitalize; color: var(--accent); margin-bottom: 0.4rem; }
+.agenda-event { display: grid; grid-template-columns: 4.2rem 2rem 1fr; align-items: baseline; gap: 0.6rem; padding: 0.35rem 0; font-size: 1.2rem; }
+.ev-time { color: var(--muted); font-variant-numeric: tabular-nums; }
+.ev-body strong { margin-right: 0.4rem; }
+
+/* ---------- Écran de diffusion ---------- */
+.idle { margin: auto; text-align: center; display: flex; flex-direction: column; gap: 1.5rem; }
+.idle-clock { font-size: 8rem; font-weight: 300; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.idle-msg { font-size: 1.8rem; margin: 0; color: var(--muted); }
+
+#overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  padding: 2rem 4rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  z-index: 10;
+  animation: fade 0.25s ease;
+}
+#overlay[hidden] { display: none; }
+#overlay .card h2 { font-size: 3rem; }
+#overlay blockquote { font-size: 2.4rem; }
+.cast-banner { color: var(--muted); font-size: 1.05rem; }
+
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 3rem;
+  transform: translateX(-50%) translateY(1rem);
+  background: var(--panel-2);
+  padding: 0.8rem 1.6rem;
+  border-radius: 0.6rem;
+  font-size: 1.2rem;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 20;
+}
+#toast.visible { opacity: 1; transform: translateX(-50%); }
+
+#live {
+  position: fixed;
+  right: 1.2rem;
+  top: 1.2rem;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.4;
+  z-index: 30;
+}
+#live.on { background: var(--ok); opacity: 0.9; }

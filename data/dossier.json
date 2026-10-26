@@ -1,0 +1,117 @@
+{
+  "titre": "M. Durand c/ SAS Exemple",
+  "juridiction": "Conseil de prud'hommes — Section Encadrement",
+  "audience": "+12",
+  "objet": "Contestation d'un licenciement pour faute grave",
+  "chronologie": [
+    {
+      "date": "2019-03-04",
+      "titre": "Embauche en CDI",
+      "description": "Responsable logistique, statut cadre. Aucun antécédent disciplinaire pendant 4 ans.",
+      "pieces": ["P1"]
+    },
+    {
+      "date": "2023-01-15",
+      "titre": "Entretien annuel élogieux",
+      "description": "« Collaborateur fiable, force de proposition ». Objectifs atteints à 112 %.",
+      "pieces": ["P3"]
+    },
+    {
+      "date": "2023-09-02",
+      "titre": "Alerte sur la surcharge de travail",
+      "description": "Courriel au N+1 signalant l'impossibilité de tenir les délais à effectif constant.",
+      "pieces": ["P4"]
+    },
+    {
+      "date": "2023-10-10",
+      "titre": "Convocation à entretien préalable",
+      "description": "Mise à pied conservatoire notifiée le même jour.",
+      "pieces": ["A2"]
+    },
+    {
+      "date": "2023-10-27",
+      "titre": "Licenciement pour faute grave",
+      "description": "Grief unique : « retards répétés dans le traitement des commandes ».",
+      "pieces": ["A3"]
+    }
+  ],
+  "pieces": [
+    {
+      "id": "P1",
+      "numero": 1,
+      "camp": "demandeur",
+      "titre": "Contrat de travail",
+      "date": "2019-03-04",
+      "extrait": "Le salarié exercera ses fonctions sous l'autorité du Directeur des opérations.",
+      "note": "Fixe le périmètre du poste : pas de responsabilité sur les effectifs."
+    },
+    {
+      "id": "P3",
+      "numero": 3,
+      "camp": "demandeur",
+      "titre": "Compte rendu d'entretien annuel 2023",
+      "date": "2023-01-15",
+      "extrait": "Collaborateur fiable, force de proposition. Objectifs atteints à 112 %.",
+      "note": "Neuf mois avant le licenciement, l'employeur loue sa fiabilité."
+    },
+    {
+      "id": "P4",
+      "numero": 4,
+      "camp": "demandeur",
+      "titre": "Courriel d'alerte au N+1",
+      "date": "2023-09-02",
+      "extrait": "Avec deux postes non remplacés, je ne pourrai pas tenir les délais de la rentrée. Je demande un renfort.",
+      "note": "Alerte restée sans réponse : l'employeur connaissait la cause des retards."
+    },
+    {
+      "id": "A2",
+      "numero": 2,
+      "camp": "adverse",
+      "titre": "Convocation à entretien préalable",
+      "date": "2023-10-10",
+      "extrait": "Compte tenu de la gravité des faits, nous vous notifions une mise à pied conservatoire.",
+      "note": "Aucun fait daté n'est visé dans la convocation."
+    },
+    {
+      "id": "A3",
+      "numero": 3,
+      "camp": "adverse",
+      "titre": "Lettre de licenciement",
+      "date": "2023-10-27",
+      "extrait": "Vous avez accumulé des retards répétés dans le traitement des commandes, désorganisant gravement le service.",
+      "note": "La lettre fixe les limites du litige : seul ce grief peut être invoqué."
+    },
+    {
+      "id": "A5",
+      "numero": 5,
+      "camp": "adverse",
+      "titre": "Attestation du N+1",
+      "date": "2024-02-12",
+      "extrait": "M. Durand n'a jamais signalé de difficulté particulière dans son service.",
+      "note": "Contredite frontalement par la pièce P4."
+    }
+  ],
+  "bombes": [
+    {
+      "id": "B1",
+      "titre": "Le N+1 avait été alerté",
+      "adverse": { "piece": "A5", "citation": "M. Durand n'a jamais signalé de difficulté particulière." },
+      "realite": { "piece": "P4", "citation": "Je ne pourrai pas tenir les délais de la rentrée. Je demande un renfort." },
+      "phrase": "L'attestant dit n'avoir jamais été alerté. Voici le courriel qu'il a reçu, cinq semaines avant le licenciement."
+    },
+    {
+      "id": "B2",
+      "titre": "Fiable en janvier, fautif en octobre",
+      "adverse": { "piece": "A3", "citation": "Retards répétés désorganisant gravement le service." },
+      "realite": { "piece": "P3", "citation": "Collaborateur fiable, objectifs atteints à 112 %." },
+      "phrase": "En neuf mois, rien n'a changé — sauf deux postes supprimés."
+    },
+    {
+      "id": "B3",
+      "titre": "Une faute grave sans date",
+      "adverse": { "piece": "A2", "citation": "Compte tenu de la gravité des faits…" },
+      "realite": { "piece": "A3", "citation": "Aucun fait daté, aucune commande identifiée." },
+      "phrase": "Quels faits ? Quelles commandes ? À quelle date ? La lettre ne le dit pas."
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+:root {
+  --bg: #0f1218;
+  --panel: #181d26;
+  --panel-2: #212835;
+  --text: #eef1f6;
+  --muted: #9aa3b2;
+  --accent: #e0b25c;
+  --demandeur: #5fb3a1;
+  --adverse: #e0716b;
+  --ok: #6cc28a;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: max(16px, env(safe-area-inset-top)) 16px calc(88px + env(safe-area-inset-bottom));
+}
+
+button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+.muted { color: var(--muted); }
+.center { text-align: center; }
+
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
+.brand { font-size: 22px; font-weight: 750; }
+.brand span { color: var(--accent); font-weight: 500; }
+#dossier { font-size: 14px; }
+.status { font-size: 13px; padding: 4px 10px; border-radius: 99px; background: var(--panel-2); color: var(--muted); white-space: nowrap; }
+.status.on { background: var(--ok); color: #08200f; }
+
+.tabs { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { padding: 8px 14px; border-radius: 99px; background: var(--panel); color: var(--muted); white-space: nowrap; }
+.tab.active { background: var(--accent); color: #1a1408; font-weight: 650; }
+
+#search {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-2);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+  margin-bottom: 12px;
+}
+[hidden] { display: none !important; }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+.item {
+  text-align: left;
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 4px solid var(--muted);
+}
+.item:active { background: var(--panel-2); }
+.item-demandeur { border-color: var(--demandeur); }
+.item-adverse { border-color: var(--adverse); }
+.item-bombe { border-color: var(--accent); }
+.item-meta { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.item-title { font-weight: 650; font-size: 17px; }
+.item-text { font-size: 14px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.item-cast { font-size: 13px; color: var(--accent); margin-top: 4px; }
+
+.pad { display: flex; flex-direction: column; gap: 24px; align-items: center; padding-top: 8px; }
+.views { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.views button { background: var(--panel); padding: 8px 14px; border-radius: 99px; font-size: 14px; }
+.dpad {
+  display: grid;
+  grid-template-areas: ". up ." "left ok right" ". down .";
+  grid-template-columns: repeat(3, 76px);
+  grid-template-rows: repeat(3, 76px);
+  gap: 8px;
+}
+.dpad button { background: var(--panel); border-radius: 16px; font-size: 24px; }
+.dpad button:active, .media button:active, .views button:active { background: var(--panel-2); }
+.dpad .up { grid-area: up; }
+.dpad .left { grid-area: left; }
+.dpad .right { grid-area: right; }
+.dpad .down { grid-area: down; }
+.dpad .ok { grid-area: ok; background: var(--accent); color: #1a1408; font-weight: 750; font-size: 20px; border-radius: 50%; }
+.media { display: flex; gap: 10px; }
+.media button { background: var(--panel); border-radius: 12px; padding: 14px 18px; font-size: 20px; }
+
+.hide {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--panel-2);
+  font-weight: 650;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  max-width: calc(100% - 32px);
+}
+#toast.visible { opacity: 1; }

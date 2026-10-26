@@ -1,0 +1,25 @@
+{
+  "titre": "Plaidoirie — M. Durand c/ SAS Exemple",
+  "actes": [
+    {
+      "titre": "Acte I — L'accroche",
+      "minutes": 1,
+      "texte": "Monsieur le Président, Mesdames et Messieurs les Conseillers.\n\nEn janvier 2023, la société écrivait de M. Durand qu'il était **un collaborateur fiable**.\n\n[silence 3s]\n\nEn octobre, elle le licenciait pour faute grave."
+    },
+    {
+      "titre": "Acte II — Les faits",
+      "minutes": 3,
+      "texte": "Quatre ans d'ancienneté. Aucune sanction. Des objectifs atteints à **112 %** — pièce n°3.\n\nÀ la rentrée 2023, deux postes ne sont pas remplacés. M. Durand alerte son supérieur par écrit, le 2 septembre — pièce n°4.\n\nAucune réponse.\n\n[silence 2s]\n\nCinq semaines plus tard : convocation, mise à pied, licenciement."
+    },
+    {
+      "titre": "Acte III — L'autodémolition adverse",
+      "minutes": 4,
+      "texte": "La société produit l'attestation du N+1 — sa pièce n°5. Il écrit : « M. Durand n'a **jamais** signalé de difficulté ».\n\nJe vous demande de prendre la pièce n°4.\n\n[silence 4s]\n\nC'est à lui qu'elle est adressée. C'est lui qui l'a reçue.\n\nLa lettre de licenciement ne vise aucun fait daté, aucune commande identifiée. Elle fixe pourtant les limites du litige."
+    },
+    {
+      "titre": "Acte IV — Les demandes",
+      "minutes": 2,
+      "texte": "Le licenciement est dépourvu de cause réelle et sérieuse.\n\nNous sollicitons le rappel de salaire de la mise à pied, l'indemnité de préavis, l'indemnité de licenciement, et des dommages-intérêts conformément au barème.\n\nJe vous remercie."
+    }
+  ]
+}

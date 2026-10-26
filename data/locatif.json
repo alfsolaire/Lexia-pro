@@ -1,0 +1,21 @@
+{
+  "_dates": "Les dates acceptent le format AAAA-MM-JJ ou un décalage relatif à aujourd'hui (\"+2\", \"-1\", \"0\").",
+  "meubles": [
+    { "id": "studio", "nom": "Studio Centre", "adresse": "12 rue des Lilas" },
+    { "id": "t2", "nom": "T2 Jardin", "adresse": "4 impasse du Moulin" },
+    { "id": "loft", "nom": "Loft Gare", "adresse": "27 avenue de la Gare" }
+  ],
+  "reservations": [
+    { "meuble": "studio", "voyageur": "Mme Martin", "arrivee": "-3", "depart": "0", "heureArrivee": "16:00", "heureDepart": "11:00", "personnes": 2 },
+    { "meuble": "studio", "voyageur": "M. Lefèvre", "arrivee": "0", "depart": "+4", "heureArrivee": "17:30", "heureDepart": "10:00", "personnes": 1 },
+    { "meuble": "t2", "voyageur": "Famille Bernard", "arrivee": "-1", "depart": "+6", "heureArrivee": "15:00", "heureDepart": "11:00", "personnes": 4 },
+    { "meuble": "t2", "voyageur": "Mme Petit", "arrivee": "+6", "depart": "+9", "heureArrivee": "16:00", "heureDepart": "11:00", "personnes": 2 },
+    { "meuble": "loft", "voyageur": "M. Costa", "arrivee": "+2", "depart": "+5", "heureArrivee": "18:00", "heureDepart": "10:30", "personnes": 2 }
+  ],
+  "menages": [
+    { "meuble": "studio", "date": "0", "heure": "11:30", "intervenant": "Ménage", "note": "Changer le linge + recharger le café" },
+    { "meuble": "loft", "date": "+1", "heure": "14:00", "intervenant": "Ménage", "note": "Vérifier la chaudière" },
+    { "meuble": "studio", "date": "+4", "heure": "10:30", "intervenant": "Ménage" },
+    { "meuble": "loft", "date": "+5", "heure": "11:00", "intervenant": "Ménage" }
+  ]
+}
