@@ -19,7 +19,11 @@ Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dan
 
 ## Récupérer l'APK
 
-Chaque push déclenche le workflow GitHub Actions **Build APK**, qui produit l'artefact `LexiaPlayer-apk` (onglet *Actions* → dernier run → *Artifacts*).
+Chaque push déclenche le workflow GitHub Actions **Build APK**, qui publie l'APK dans la release « latest » :
+
+https://github.com/alfsolaire/Lexia-pro/releases/latest/download/LexiaPlayer.apk
+
+Ce lien peut être saisi directement dans l'appli **Downloader** de la Fire TV.
 
 Compilation locale (Android Studio ou SDK Android installé) :
 
