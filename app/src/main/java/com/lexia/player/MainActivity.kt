@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Modifier
+import com.lexia.player.billing.Licensing
 import com.lexia.player.data.Content
 import com.lexia.player.data.ContentType
 import com.lexia.player.data.Prefs
@@ -25,6 +26,7 @@ import com.lexia.player.ui.BrowseScreen
 import com.lexia.player.ui.HomeScreen
 import com.lexia.player.ui.LexiaTheme
 import com.lexia.player.ui.LoginScreen
+import com.lexia.player.ui.PaywallScreen
 import com.lexia.player.ui.SeriesScreen
 
 private sealed interface Screen {
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val prefs = Prefs(this)
+        Licensing.init(this)
         setContent {
             LexiaTheme {
                 App(prefs) { items, index ->
@@ -70,6 +73,11 @@ private fun App(prefs: Prefs, onPlay: (List<Content>, Int) -> Unit) {
     fun reset(screen: Screen) {
         stack.clear()
         stack.add(screen)
+    }
+
+    if (Licensing.locked) {
+        PaywallScreen()
+        return
     }
 
     Box(Modifier.fillMaxSize().background(Bg)) {

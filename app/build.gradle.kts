@@ -9,18 +9,43 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lexia.player"
         minSdk = 22
         targetSdk = 34
         versionCode = 2
         versionName = "1.1"
     }
 
+    // Version « direct » : installation via Downloader, sans achat (usage personnel).
+    // Version « amazon » : publiée sur l'Amazon Appstore, essai de 7 jours puis déblocage payant.
+    flavorDimensions += "store"
+    productFlavors {
+        create("direct") {
+            dimension = "store"
+            applicationId = "com.lexia.player"
+        }
+        create("amazon") {
+            dimension = "store"
+            applicationId = "com.alftv.pro"
+        }
+    }
+
+    // Clé de signature définitive fournie par la CI (secrets GitHub), sinon clé de debug.
+    val keystorePath: String? = System.getenv("SIGNING_KEYSTORE_PATH")
+    signingConfigs {
+        if (keystorePath != null) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Signé avec la clé de debug pour pouvoir l'installer directement (sideload).
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (keystorePath != null) "release" else "debug")
         }
     }
 
@@ -61,4 +86,6 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    "amazonImplementation"("com.amazon.device:amazon-appstore-sdk:3.0.9")
 }

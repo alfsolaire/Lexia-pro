@@ -30,6 +30,19 @@ https://github.com/alfsolaire/Lexia-pro/releases/latest/download/LexiaPlayer.apk
 
 Ce lien peut être saisi directement dans l'appli **Downloader** de la Fire TV.
 
+Deux versions sont compilées :
+
+| Fichier | Identifiant | Usage |
+|---|---|---|
+| `LexiaPlayer.apk` | `com.lexia.player` | Installation directe (Downloader), sans achat |
+| `AlfTVPro-amazon.apk` | `com.alftv.pro` | Amazon Appstore : essai 7 jours puis déblocage à 4,99 € (achat intégré Amazon) |
+
+Publication sur l'Appstore : voir [docs/amazon-listing.md](docs/amazon-listing.md) et
+[docs/privacy-policy.md](docs/privacy-policy.md). Visuels dans `store-assets/`.
+
+Signature définitive (facultative) : ajouter dans *Settings → Secrets and variables → Actions*
+les secrets `KEYSTORE_BASE64`, `SIGNING_STORE_PASSWORD`, `SIGNING_KEY_ALIAS` et `SIGNING_KEY_PASSWORD`.
+
 Compilation locale (Android Studio ou SDK Android installé) :
 
 ```bash

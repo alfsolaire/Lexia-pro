@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,6 +24,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lexia.player.billing.Licensing
 import com.lexia.player.data.AccountInfo
 import com.lexia.player.data.ContentType
 import com.lexia.player.data.LoginConfig
@@ -61,7 +63,22 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Un
             Spacer(Modifier.weight(1f))
             account?.let { Text(accountLine(it), color = TextDim, fontSize = 16.sp) }
         }
-        Spacer(Modifier.height(48.dp))
+        if (Licensing.requiresPurchase && !Licensing.unlocked) {
+            Spacer(Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val days = Licensing.daysLeft()
+                Text(
+                    "Essai gratuit : $days jour${if (days > 1) "s" else ""} restant${if (days > 1) "s" else ""}",
+                    color = TextMain, fontSize = 18.sp,
+                )
+                Spacer(Modifier.width(20.dp))
+                TvButton("Débloquer à vie (${Licensing.price})", { Licensing.purchase() })
+            }
+            Licensing.message?.let { Text(it, color = TextDim, fontSize = 14.sp) }
+            Spacer(Modifier.height(24.dp))
+        } else {
+            Spacer(Modifier.height(48.dp))
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(28.dp), modifier = Modifier.fillMaxWidth()) {
             HomeTile("TV en direct", "📺", Modifier.weight(1f).focusRequester(firstFocus)) { onOpen(ContentType.LIVE) }
             HomeTile("Films", "🎬", Modifier.weight(1f)) { onOpen(ContentType.MOVIE) }

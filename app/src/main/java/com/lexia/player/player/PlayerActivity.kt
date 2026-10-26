@@ -25,6 +25,7 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
+import com.lexia.player.billing.Licensing
 import com.lexia.player.data.Content
 import com.lexia.player.data.ContentType
 import com.lexia.player.data.Http
@@ -59,7 +60,7 @@ class PlayerActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (PlayQueue.items.isEmpty()) {
+        if (PlayQueue.items.isEmpty() || Licensing.locked) {
             finish()
             return
         }
