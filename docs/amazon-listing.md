@@ -4,7 +4,10 @@
 - **Titre** : Alf TV Pro IPTV
 - **Catégorie** : Lecteurs vidéo (Video Players)
 - **Prix de l'application** : Gratuit (avec achat intégré)
-- **Achat intégré** : type *Entitlement*, SKU `com.alftv.pro.unlock`, titre « Version complète », prix 4,99 €
+- **Achats intégrés** (essai gratuit de 7 jours géré par l'application, puis) :
+  - **Abonnement annuel** : type *Subscription*, SKU parent `com.alftv.pro.subscription`,
+    durée (*term*) **1 an** avec le SKU `com.alftv.pro.yearly`, prix **4,99 €**
+  - **Accès à vie** : type *Entitlement*, SKU `com.alftv.pro.unlock`, titre « Accès à vie », prix **19,99 €**
 - **Appareils** : Fire TV uniquement (toutes générations récentes)
 - **Politique de confidentialité** : lien vers `docs/privacy-policy.md` (voir README)
 
@@ -23,7 +26,10 @@ Connectez votre propre abonnement (Xtream Codes ou playlist M3U) et profitez :
 • de plusieurs comptes, chacun avec ses favoris et son historique ;
 • d'un changement de chaîne instantané avec les flèches de la télécommande.
 
-Essai gratuit de 7 jours, puis déblocage à vie par un achat unique, sans abonnement.
+Connexion rapide par QR code : saisissez votre abonnement depuis votre téléphone.
+Pause du direct et reprise en différé.
+
+Essai gratuit de 7 jours, puis abonnement annuel ou accès à vie en un seul paiement.
 
 IMPORTANT : Alf TV Pro IPTV est uniquement un lecteur. Il ne contient et ne fournit aucune chaîne,
 aucun film ni aucune série. Vous devez disposer d'un abonnement auprès d'un fournisseur de contenus
@@ -40,7 +46,9 @@ Connect your own subscription (Xtream Codes or M3U playlist) and enjoy live TV b
 and search, a TV guide (now and next), movies and series, resume playback, favorites, recently watched
 channels, pinned categories, multiple accounts and instant channel switching.
 
-7-day free trial, then a one-time lifetime unlock — no subscription.
+Quick QR code login from your phone, and live TV pause.
+
+7-day free trial, then a yearly subscription or a one-time lifetime unlock.
 
 IMPORTANT: Alf TV Pro IPTV is a player only. It does not include or provide any channels, movies or series.
 You need a subscription from an authorized content provider. The publisher is not affiliated with any
@@ -57,7 +65,10 @@ content provider and does not endorse streaming content without the rights holde
 
 ## Étapes dans la console (developer.amazon.com)
 1. *Apps & Services → Add New App → Android* : titre, catégorie.
-2. *In-App Items → Add Single IAP → Entitlement* : SKU `com.alftv.pro.unlock`, prix 4,99 €, puis *Submit IAP*.
+2. *In-App Items* :
+   - *Add Single IAP → Entitlement* : SKU `com.alftv.pro.unlock`, prix 19,99 €, puis *Submit IAP* ;
+   - *Add Subscription* : SKU `com.alftv.pro.subscription`, puis ajoutez une durée **Annuelle**
+     avec le SKU `com.alftv.pro.yearly` au prix de 4,99 €, puis *Submit IAP*.
 3. *Upload your app file* : téléversez `AlfTVPro-amazon.apk` (release GitHub « latest »).
    Téléchargez la **clé publique** (`AppstoreAuthenticationKey.pem`) proposée par la console et
    déposez-la dans `app/src/amazon/assets/` du dépôt, puis recompilez et téléversez le nouvel APK.

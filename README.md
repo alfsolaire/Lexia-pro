@@ -18,6 +18,8 @@ Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dan
 - **Dernières chaînes regardées** / **Récemment vus** : catégorie dédiée en haut de la liste.
 - **Plusieurs comptes** : bouton *Comptes* sur l'accueil ; favoris et historique propres à chaque compte.
 - **Classement des catégories** : tri A → Z ou ordre du serveur, et ☰ sur une catégorie pour l'épingler en haut.
+- **Connexion par QR code** : l'écran de connexion affiche un QR code ; le téléphone (même Wi-Fi) ouvre une page servie par la Fire TV et y envoie l'abonnement.
+- **Pause du direct** (touche ⏯) avec reprise en différé jusqu'à 2 minutes, puis retour automatique au direct.
 - Infos du compte : date d'expiration, nombre de connexions.
 - Format du direct au choix (MPEG-TS ou HLS) si un serveur pose problème.
 - Interface entièrement pilotable à la télécommande.
@@ -35,7 +37,7 @@ Deux versions sont compilées :
 | Fichier | Identifiant | Usage |
 |---|---|---|
 | `LexiaPlayer.apk` | `com.lexia.player` | Installation directe (Downloader), sans achat |
-| `AlfTVPro-amazon.apk` | `com.alftv.pro` | Amazon Appstore : essai 7 jours puis déblocage à 4,99 € (achat intégré Amazon) |
+| `AlfTVPro-amazon.apk` | `com.alftv.pro` | Amazon Appstore : essai 7 jours, puis abonnement annuel (4,99 €) ou accès à vie (19,99 €) |
 
 Publication sur l'Appstore : voir [docs/amazon-listing.md](docs/amazon-listing.md) et
 [docs/privacy-policy.md](docs/privacy-policy.md). Visuels dans `store-assets/`.

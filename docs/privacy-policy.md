@@ -11,6 +11,9 @@ a accès par son propre abonnement, auprès d'un fournisseur de son choix.
 - **Identifiants de connexion** (adresse du serveur, nom d'utilisateur, mot de passe ou URL de playlist)
   saisis par l'utilisateur : ils sont enregistrés **uniquement sur l'appareil** et envoyés exclusivement
   au serveur indiqué par l'utilisateur, pour charger les listes et lire les vidéos.
+- **Connexion par QR code** : la page web ouverte sur le téléphone est servie par l'appareil lui-même,
+  sur le réseau Wi-Fi local. Les identifiants vont directement du téléphone à la TV, sans passer
+  par Internet ni par un serveur de l'éditeur.
 - **Préférences locales** : favoris, historique de visionnage, positions de reprise de lecture,
   catégories épinglées. Elles restent **sur l'appareil**.
 - **Achat intégré** : le paiement est entièrement géré par Amazon. L'application reçoit seulement
@@ -39,6 +42,8 @@ it only plays streams the user is entitled to through their own subscription wit
 
 - **Login details** entered by the user are stored **on the device only** and sent only to the server
   the user specified.
+- **QR code login**: the web page opened on the phone is served by the TV device itself on the local
+  Wi-Fi network; login details go straight from the phone to the TV, never through the Internet.
 - **Local preferences** (favorites, history, resume positions, pinned categories) stay **on the device**.
 - **In-app purchase** is handled entirely by Amazon; the app never accesses payment details.
 - No personal data collection by the publisher, no advertising trackers, no analytics, no data sale.

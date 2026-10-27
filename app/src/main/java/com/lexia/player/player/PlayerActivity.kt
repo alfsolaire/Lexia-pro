@@ -40,6 +40,8 @@ class PlayerActivity : ComponentActivity() {
     private lateinit var prefs: Prefs
     private var current: Content? = null
     private var epgJob: Job? = null
+    private var pausedAt = 0L
+    private var lastLiveRetry = 0L
     private val handler = Handler(Looper.getMainLooper())
     private val hideOverlay = Runnable { overlay.visibility = View.GONE }
     private val periodicSave = object : Runnable {
@@ -97,10 +99,36 @@ class PlayerActivity : ComponentActivity() {
     private fun initPlayer() {
         if (player != null) return
         PreviewPlayer.stop()
-        val exo = buildExoPlayer(this)
+        val exo = buildExoPlayer(this, pauseBuffer = true)
         exo.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
+                // En direct, après une pause trop longue le serveur coupe souvent le flux : on revient au direct.
+                val now = System.currentTimeMillis()
+                if (isLive && now - lastLiveRetry > 20_000) {
+                    lastLiveRetry = now
+                    showOverlay("Reconnexion au direct…", 3000)
+                    play(PlayQueue.index)
+                    return
+                }
                 showOverlay("Lecture impossible (${error.errorCodeName}). Essayez une autre chaîne ou changez le format du direct.", 8000)
+            }
+
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (!isLive) return
+                if (!playWhenReady) {
+                    pausedAt = System.currentTimeMillis()
+                    showOverlay("⏸  En pause\nAppuyez sur ⏯ pour reprendre (en différé)", PAUSE_BUFFER_MS)
+                } else if (pausedAt > 0) {
+                    val pausedFor = System.currentTimeMillis() - pausedAt
+                    pausedAt = 0
+                    if (pausedFor > PAUSE_BUFFER_MS - 10_000) {
+                        // Au-delà de la mémoire tampon, impossible de reprendre en différé : retour au direct.
+                        play(PlayQueue.index)
+                        showOverlay("▶  Pause trop longue : retour au direct", 3500)
+                    } else {
+                        showOverlay("▶  Reprise en différé (${pausedFor / 1000} s de retard)\n▲/▼ pour revenir au direct", 4000)
+                    }
+                }
             }
 
             override fun onPlaybackStateChanged(state: Int) {
@@ -138,6 +166,7 @@ class PlayerActivity : ComponentActivity() {
         val url = item.url ?: return
         saveProgress()
         current = item
+        pausedAt = 0
         // Les épisodes sont mémorisés via leur série (au moment de l'ouvrir).
         if (item.type != ContentType.SERIES) prefs.addRecent(item.type, favoriteKey(item))
 

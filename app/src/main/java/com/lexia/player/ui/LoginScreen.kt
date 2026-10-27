@@ -1,6 +1,8 @@
 package com.lexia.player.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
@@ -39,10 +43,13 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lexia.player.data.LoginConfig
+import com.lexia.player.data.PhoneLoginServer
 import com.lexia.player.data.Prefs
 import com.lexia.player.data.Session
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
@@ -57,6 +64,17 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     val firstFocus = remember { FocusRequester() }
+    var received by remember { mutableStateOf<Pair<String, LoginConfig>?>(null) }
+    val phoneServer = remember { PhoneLoginServer { n, cfg -> received = n to cfg } }
+    var qrUrl by remember { mutableStateOf<String?>(null) }
+    var qrReady by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        onDispose { phoneServer.stop() }
+    }
+    LaunchedEffect(Unit) {
+        qrUrl = withContext(Dispatchers.IO) { phoneServer.start() }
+        qrReady = true
+    }
 
     fun connect() {
         val config = LoginConfig(mode, server.trim(), username.trim(), password, m3uUrl.trim())
@@ -85,19 +103,57 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
         }
     }
 
-    Row(Modifier.fillMaxSize().background(Bg).padding(horizontal = 56.dp, vertical = 40.dp)) {
+    // Identifiants reçus du téléphone : on remplit le formulaire et on se connecte.
+    LaunchedEffect(received) {
+        val (n, cfg) = received ?: return@LaunchedEffect
+        received = null
+        name = n
+        mode = cfg.mode
+        server = cfg.server
+        username = cfg.username
+        password = cfg.password
+        m3uUrl = cfg.m3uUrl
+        connect()
+    }
+
+    Row(Modifier.fillMaxSize().background(Bg).padding(horizontal = 56.dp, vertical = 32.dp)) {
         Column(
             modifier = Modifier.weight(1f).fillMaxHeight().padding(end = 40.dp),
             verticalArrangement = Arrangement.Center,
         ) {
-            Text(APP_TITLE, color = TextMain, fontSize = 46.sp, fontWeight = FontWeight.Bold)
-            Text(APP_SUBTITLE, color = Accent, fontSize = 20.sp)
-            Spacer(Modifier.height(28.dp))
+            Text(APP_TITLE, color = TextMain, fontSize = 40.sp, fontWeight = FontWeight.Bold)
+            Text(APP_SUBTITLE, color = Accent, fontSize = 18.sp)
+            Spacer(Modifier.height(18.dp))
+            val url = qrUrl
+            if (url != null) {
+                val qr = remember(url) { qrBitmap(url) }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        bitmap = qr,
+                        contentDescription = "QR code de connexion",
+                        modifier = Modifier.size(170.dp).background(Color.White, RoundedCornerShape(8.dp)).padding(6.dp),
+                    )
+                    Spacer(Modifier.width(18.dp))
+                    Column {
+                        Text("📱 Connexion rapide", color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Scannez ce QR code avec votre téléphone (connecté au même Wi-Fi) et saisissez votre abonnement sur le téléphone.",
+                            color = TextDim, fontSize = 14.sp,
+                        )
+                    }
+                }
+            } else if (qrReady) {
+                Text(
+                    "Connexion par QR code indisponible : la Fire TV n'est pas reliée à un réseau local.",
+                    color = TextDim, fontSize = 14.sp,
+                )
+            }
+            Spacer(Modifier.height(18.dp))
             Text(
-                "Cette application est uniquement un lecteur : elle ne fournit aucune chaîne ni aucun contenu. " +
-                    "Saisissez les identifiants de l'abonnement fourni par votre fournisseur.",
+                "Cette application est uniquement un lecteur : elle ne fournit aucune chaîne ni aucun contenu.",
                 color = TextDim,
-                fontSize = 16.sp,
+                fontSize = 13.sp,
             )
         }
         Column(

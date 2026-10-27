@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,19 +40,47 @@ fun PaywallScreen() {
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "Débloquez l'application à vie pour ${Licensing.price}, en un seul achat, sans abonnement.\n" +
-                "Vos comptes, favoris et réglages sont conservés.",
+            "Choisissez votre formule pour continuer. Vos comptes, favoris et réglages sont conservés.",
             color = TextDim, fontSize = 17.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(28.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            TvButton("Débloquer (${Licensing.price})", { Licensing.purchase() }, Modifier.focusRequester(buyFocus))
-            TvButton("Restaurer mes achats", { Licensing.restore() })
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            OfferCard(
+                title = "Annuel",
+                price = "${Licensing.priceYearly} / an",
+                detail = "Renouvelé chaque année,\nrésiliable à tout moment",
+                onClick = { Licensing.buyYearly() },
+                modifier = Modifier.focusRequester(buyFocus),
+            )
+            OfferCard(
+                title = "À vie  ★ meilleure offre",
+                price = Licensing.priceLifetime,
+                detail = "Un seul paiement,\nsans abonnement",
+                onClick = { Licensing.buyLifetime() },
+            )
         }
+        Spacer(Modifier.height(18.dp))
+        TvButton("Restaurer mes achats", { Licensing.restore() })
         Licensing.message?.let {
             Spacer(Modifier.height(18.dp))
             Text(it, color = Accent, fontSize = 16.sp, textAlign = TextAlign.Center)
         }
     }
     LaunchedEffect(Unit) { runCatching { buyFocus.requestFocus() } }
+}
+
+@Composable
+private fun OfferCard(title: String, price: String, detail: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FocusCard(onClick = onClick, modifier = modifier.width(300.dp)) {
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(title, color = Accent, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text(price, color = TextMain, fontSize = 30.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text(detail, color = TextDim, fontSize = 14.sp, textAlign = TextAlign.Center)
+        }
+    }
 }

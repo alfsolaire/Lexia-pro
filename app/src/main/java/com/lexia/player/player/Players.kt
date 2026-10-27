@@ -7,22 +7,37 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.lexia.player.data.Http
 
 /** Construction commune des lecteurs (plein écran et aperçu). */
 @OptIn(UnstableApi::class)
-fun buildExoPlayer(context: Context): ExoPlayer {
+fun buildExoPlayer(context: Context, pauseBuffer: Boolean = false): ExoPlayer {
     val http = DefaultHttpDataSource.Factory()
         .setUserAgent(Http.USER_AGENT)
         .setAllowCrossProtocolRedirects(true)
         .setConnectTimeoutMs(15_000)
         .setReadTimeoutMs(30_000)
-    return ExoPlayer.Builder(context)
+    val builder = ExoPlayer.Builder(context)
         .setMediaSourceFactory(DefaultMediaSourceFactory(DefaultDataSource.Factory(context, http)))
-        .build()
+    if (pauseBuffer) {
+        // Mémoire tampon plus grande : permet de mettre le direct en pause puis de reprendre en différé.
+        builder.setLoadControl(
+            DefaultLoadControl.Builder()
+                .setBufferDurationsMs(30_000, PAUSE_BUFFER_MS.toInt(), 2_500, 5_000)
+                .setTargetBufferBytes(PAUSE_BUFFER_BYTES)
+                .setPrioritizeTimeOverSizeThresholds(false)
+                .build(),
+        )
+    }
+    return builder.build()
 }
+
+/** Durée maximale conservée pendant une pause du direct (limitée aussi par la mémoire). */
+const val PAUSE_BUFFER_MS = 120_000L
+private const val PAUSE_BUFFER_BYTES = 64 * 1024 * 1024
 
 fun mediaItemFor(url: String): MediaItem {
     val builder = MediaItem.Builder().setUri(url)

@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk = 22
         targetSdk = 34
-        versionCode = 3
-        versionName = "1.2"
+        versionCode = 4
+        versionName = "1.3"
     }
 
     // Version « direct » : installation via Downloader, sans achat (usage personnel).
@@ -86,6 +86,7 @@ dependencies {
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("com.google.zxing:core:3.5.3")
 
     "amazonImplementation"("com.amazon.device:amazon-appstore-sdk:3.0.9")
 }

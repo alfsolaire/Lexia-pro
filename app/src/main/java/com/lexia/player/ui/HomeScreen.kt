@@ -72,7 +72,9 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Un
                     color = TextMain, fontSize = 18.sp,
                 )
                 Spacer(Modifier.width(20.dp))
-                TvButton("Débloquer à vie (${Licensing.price})", { Licensing.purchase() })
+                TvButton("Annuel (${Licensing.priceYearly}/an)", { Licensing.buyYearly() })
+                Spacer(Modifier.width(12.dp))
+                TvButton("À vie (${Licensing.priceLifetime})", { Licensing.buyLifetime() })
             }
             Licensing.message?.let { Text(it, color = TextDim, fontSize = 14.sp) }
             Spacer(Modifier.height(24.dp))

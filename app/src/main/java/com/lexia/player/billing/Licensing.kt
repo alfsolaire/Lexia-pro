@@ -5,17 +5,23 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
-/** Essai gratuit puis déblocage par achat (version Appstore uniquement). */
+/** Essai gratuit puis abonnement annuel ou achat à vie (version Appstore uniquement). */
 object Licensing {
     const val TRIAL_DAYS = 7
     private const val DAY_MS = 24 * 60 * 60 * 1000L
     private const val CHECKING = "Vérification de vos achats…"
 
-    var unlocked by mutableStateOf(false)
+    var lifetime by mutableStateOf(false)
         private set
-    var price by mutableStateOf("4,99 €")
+    var yearly by mutableStateOf(false)
+        private set
+    var priceYearly by mutableStateOf("4,99 €")
+        private set
+    var priceLifetime by mutableStateOf("19,99 €")
         private set
     var message by mutableStateOf<String?>(null)
+
+    val unlocked: Boolean get() = lifetime || yearly
 
     private var trialStart = 0L
     private var initialized = false
@@ -26,7 +32,9 @@ object Licensing {
         if (initialized) return
         initialized = true
         val sp = context.getSharedPreferences("license", Context.MODE_PRIVATE)
-        unlocked = sp.getBoolean("unlocked", false)
+        // Ancienne clé « unlocked » (achat unique de la version précédente) = à vie.
+        lifetime = sp.getBoolean("lifetime", sp.getBoolean("unlocked", false))
+        yearly = sp.getBoolean("yearly", false)
         // La date d'installation résiste à l'effacement des données de l'application.
         val installed = runCatching {
             context.packageManager.getPackageInfo(context.packageName, 0).firstInstallTime
@@ -37,12 +45,21 @@ object Licensing {
 
         BillingBackend.init(
             context.applicationContext,
-            onUnlocked = { value ->
-                unlocked = value
-                sp.edit().putBoolean("unlocked", value).apply()
-                if (message == CHECKING) message = if (value) "Achat retrouvé : l'application est débloquée." else "Aucun achat trouvé pour ce compte Amazon."
+            onEntitlement = { hasLifetime, hasYearly ->
+                lifetime = hasLifetime
+                yearly = hasYearly
+                sp.edit().putBoolean("lifetime", hasLifetime).putBoolean("yearly", hasYearly).apply()
+                if (message == CHECKING) {
+                    message = if (hasLifetime || hasYearly) "Achat retrouvé : l'application est débloquée."
+                    else "Aucun achat trouvé pour ce compte Amazon."
+                }
             },
-            onPrice = { price = it },
+            onPrice = { sku, price ->
+                when (sku) {
+                    BillingBackend.SKU_YEARLY -> priceYearly = price
+                    BillingBackend.SKU_LIFETIME -> priceLifetime = price
+                }
+            },
             onMessage = { message = it },
         )
     }
@@ -53,12 +70,17 @@ object Licensing {
         return left.coerceIn(0, TRIAL_DAYS)
     }
 
-    /** true quand l'essai est terminé et que l'application n'a pas été achetée. */
+    /** true quand l'essai est terminé et qu'aucune offre n'est active. */
     val locked: Boolean get() = requiresPurchase && !unlocked && daysLeft() == 0
 
-    fun purchase() {
+    fun buyYearly() {
         message = null
-        BillingBackend.purchase()
+        BillingBackend.purchase(BillingBackend.SKU_YEARLY)
+    }
+
+    fun buyLifetime() {
+        message = null
+        BillingBackend.purchase(BillingBackend.SKU_LIFETIME)
     }
 
     fun restore() {
