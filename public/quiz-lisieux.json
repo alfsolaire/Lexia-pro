@@ -1,0 +1,132 @@
+{
+  "titre": "Quiz Lisieux",
+  "sousTitre": "Culture générale sur Lisieux et le Pays d'Auge",
+  "parPartie": 10,
+  "questions": [
+    {
+      "q": "Comment appelle-t-on les habitants de Lisieux ?",
+      "choix": ["Les Lexoviens", "Les Lisiotins", "Les Augerons", "Les Lisieusains"],
+      "bonne": 0,
+      "info": "Lexoviens, du nom des Lexovii, le peuple gaulois de la région. « Augerons » désigne les habitants du Pays d'Auge."
+    },
+    {
+      "q": "Quel était le nom de Lisieux à l'époque gallo-romaine ?",
+      "choix": ["Noviomagus Lexoviorum", "Rotomagus", "Juliobona", "Aregenua"],
+      "bonne": 0,
+      "info": "Noviomagus Lexoviorum, « le nouveau marché des Lexovii ». Rotomagus est Rouen, Juliobona Lillebonne et Aregenua Vieux, près de Caen."
+    },
+    {
+      "q": "Quelle rivière traverse Lisieux ?",
+      "choix": ["La Touques", "L'Orne", "La Dives", "La Risle"],
+      "bonne": 0,
+      "info": "La Touques traverse Lisieux puis rejoint la mer entre Deauville et Trouville."
+    },
+    {
+      "q": "Dans quel département se trouve Lisieux ?",
+      "choix": ["Le Calvados", "L'Orne", "L'Eure", "La Manche"],
+      "bonne": 0,
+      "info": "Lisieux est dans le Calvados (14), au cœur du Pays d'Auge."
+    },
+    {
+      "q": "Dans quelle ville est née sainte Thérèse de Lisieux ?",
+      "choix": ["Alençon", "Lisieux", "Caen", "Rouen"],
+      "bonne": 0,
+      "info": "Thérèse Martin est née à Alençon le 2 janvier 1873. Sa famille s'installe à Lisieux en 1877."
+    },
+    {
+      "q": "Comment s'appelle la maison de la famille Martin à Lisieux, où Thérèse a grandi ?",
+      "choix": ["Les Buissonnets", "Les Tilleuls", "La Roseraie", "Les Glycines"],
+      "bonne": 0,
+      "info": "Les Buissonnets, maison de l'enfance de Thérèse, se visite encore aujourd'hui."
+    },
+    {
+      "q": "À quel âge sainte Thérèse est-elle morte, au Carmel de Lisieux ?",
+      "choix": ["24 ans", "33 ans", "47 ans", "72 ans"],
+      "bonne": 0,
+      "info": "Elle meurt de la tuberculose le 30 septembre 1897, à 24 ans."
+    },
+    {
+      "q": "Quel est le titre du livre autobiographique de sainte Thérèse ?",
+      "choix": ["Histoire d'une âme", "Journal de l'âme", "Le Chemin de perfection", "Les Confessions"],
+      "bonne": 0,
+      "info": "Histoire d'une âme, publiée en 1898. « Journal de l'âme » est celui de Jean XXIII, « Le Chemin de perfection » de Thérèse d'Avila."
+    },
+    {
+      "q": "En quelle année sainte Thérèse a-t-elle été proclamée docteur de l'Église ?",
+      "choix": ["1997", "1925", "1944", "2015"],
+      "bonne": 0,
+      "info": "Par Jean-Paul II en 1997. Elle avait été canonisée en 1925 par Pie XI."
+    },
+    {
+      "q": "Avec quelle sainte Thérèse est-elle patronne secondaire de la France ?",
+      "choix": ["Jeanne d'Arc", "Sainte Geneviève", "Sainte Bernadette", "Sainte Clotilde"],
+      "bonne": 0,
+      "info": "Pie XII l'a proclamée en 1944 patronne secondaire de la France, avec Jeanne d'Arc."
+    },
+    {
+      "q": "Sainte Thérèse, qui n'a jamais quitté son carmel, est pourtant la patronne…",
+      "choix": ["des missions", "des marins", "des musiciens", "des voyageurs"],
+      "bonne": 0,
+      "info": "Pie XI l'a proclamée patronne des missions en 1927, avec saint François Xavier."
+    },
+    {
+      "q": "Les parents de Thérèse ont été canonisés ensemble en 2015. Quels étaient leurs prénoms ?",
+      "choix": ["Louis et Zélie", "Pierre et Marie", "Joseph et Céline", "Jean et Pauline"],
+      "bonne": 0,
+      "info": "Louis et Zélie Martin, premier couple canonisé ensemble, par le pape François en 2015. Céline et Pauline sont deux des sœurs de Thérèse."
+    },
+    {
+      "q": "Quel pape est venu en pèlerinage à Lisieux en 1980 ?",
+      "choix": ["Jean-Paul II", "Paul VI", "Benoît XVI", "François"],
+      "bonne": 0,
+      "info": "Jean-Paul II est venu à Lisieux le 2 juin 1980, pendant son premier voyage en France."
+    },
+    {
+      "q": "En quelle année la basilique Sainte-Thérèse a-t-elle été consacrée ?",
+      "choix": ["1954", "1897", "1925", "1980"],
+      "bonne": 0,
+      "info": "Commencée en 1929 et bénie en 1937, la basilique a été consacrée en 1954. C'est l'un des plus grands édifices religieux bâtis en France au XXe siècle."
+    },
+    {
+      "q": "Quel évêque de Lisieux, juge du procès de Jeanne d'Arc, repose dans la cathédrale Saint-Pierre ?",
+      "choix": ["Pierre Cauchon", "Thomas Basin", "Nicolas Oresme", "Guillaume d'Estouteville"],
+      "bonne": 0,
+      "info": "Pierre Cauchon devient évêque de Lisieux après le procès de 1431 et y est inhumé. Thomas Basin et Nicolas Oresme furent aussi évêques de Lisieux."
+    },
+    {
+      "q": "Que s'est-il passé à Lisieux en juin 1944 ?",
+      "choix": [
+        "La ville a été en grande partie détruite par les bombardements",
+        "La ville a été libérée sans combat",
+        "Le général de Gaulle y a prononcé son premier discours",
+        "La basilique a été entièrement détruite"
+      ],
+      "bonne": 0,
+      "info": "Les bombardements de la bataille de Normandie (à partir des 6 et 7 juin 1944) ont détruit une grande partie de la ville. La basilique a été épargnée. Lisieux a été libérée en août 1944."
+    },
+    {
+      "q": "Quel fromage du Pays d'Auge est surnommé « le colonel », à cause de ses cinq bandes ?",
+      "choix": ["Le livarot", "Le pont-l'évêque", "Le camembert", "Le neufchâtel"],
+      "bonne": 0,
+      "info": "Le livarot est cerclé de bandes de laîche (ou de papier) qui rappellent les galons d'un colonel."
+    },
+    {
+      "q": "Le pommeau de Normandie est un mélange de…",
+      "choix": ["jus de pomme et calvados", "cidre et poiré", "poiré et cognac", "cidre et miel"],
+      "bonne": 0,
+      "info": "Moût de pomme et calvados, vieillis ensemble en fût. À servir frais, à l'apéritif."
+    },
+    {
+      "q": "Quel château Renaissance, près de Lisieux, est célèbre pour sa façade en damier de briques et de pierres ?",
+      "choix": ["Saint-Germain-de-Livet", "Crèvecœur-en-Auge", "Château Gaillard", "Château de Caen"],
+      "bonne": 0,
+      "info": "Le château de Saint-Germain-de-Livet, entouré de douves, appartient à la ville de Lisieux et se visite."
+    },
+    {
+      "q": "Quelle célèbre station balnéaire de la Côte Fleurie est à environ une demi-heure de route de Lisieux ?",
+      "choix": ["Deauville", "Étretat", "Arromanches", "Granville"],
+      "bonne": 0,
+      "info": "Deauville et Trouville sont à une trentaine de kilomètres, au bout de la vallée de la Touques."
+    }
+  ]
+}

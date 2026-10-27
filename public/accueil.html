@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Bienvenue</title>
+  <link rel="stylesheet" href="accueil.css">
+</head>
+<body>
+  <div id="photos"><div class="photo"></div><div class="photo"></div></div>
+  <div class="shade"></div>
+  <main id="screen">
+    <header>
+      <div class="welcome">
+        <h1 id="hello"></h1>
+        <p id="stay"></p>
+      </div>
+      <div class="clock">
+        <strong id="time"></strong>
+        <span id="date"></span>
+      </div>
+    </header>
+    <section class="panels">
+      <article class="panel" id="meteo" hidden></article>
+      <article class="panel" id="agenda" hidden></article>
+      <article class="panel" id="infos" hidden></article>
+    </section>
+    <footer class="bottom">
+      <div id="news" hidden>
+        <span class="news-source"></span>
+        <span class="news-title"></span>
+      </div>
+      <div id="hint"></div>
+    </footer>
+  </main>
+  <section id="guide" hidden>
+    <nav class="guide-nav"></nav>
+    <article class="guide-content"></article>
+  </section>
+  <script src="common.js"></script>
+  <script src="accueil.js"></script>
+</body>
+</html>

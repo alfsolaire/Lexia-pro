@@ -1,0 +1,26 @@
+{
+  "_lisezmoi": "Exemple. La vraie configuration va dans data/prive/accueil.json (jamais publiée). Voir README, partie « Écran d'accueil des voyageurs ».",
+  "sejours": { "fichier": "data/locatif.json" },
+  "actus": [
+    { "nom": "franceinfo", "url": "https://www.francetvinfo.fr/titres.rss" },
+    { "nom": "Ouest-France Normandie", "url": "https://www.ouest-france.fr/rss/region-normandie" }
+  ],
+  "agenda": [],
+  "photos": { "dossier": "data/photos", "intervalle": 12 },
+  "logements": {
+    "studio": {
+      "cle": "exemple-studio-a-remplacer",
+      "nom": "Studio Centre",
+      "ville": "Lisieux",
+      "latitude": 49.146,
+      "longitude": 0.226,
+      "wifi": { "reseau": "Studio-Centre", "motDePasse": "bienvenue2026" },
+      "contact": "Frédéric · 06 00 00 00 00",
+      "consignes": [
+        "Départ avant l'heure indiquée, clés dans la boîte",
+        "Merci de trier les déchets (bac jaune sous l'évier)",
+        "Pas de fête, calme après 22 h"
+      ]
+    }
+  }
+}

@@ -93,6 +93,7 @@
       { view: 'prompteur', icon: '🎙', title: 'Prompteur', desc: 'Plaidoirie chronométrée par acte' },
       { view: 'locatif', icon: '🏠', title: 'Gestion locative', desc: 'Meublés, arrivées, départs, ménage' },
       { view: 'attente', icon: '📱', title: 'Écran de diffusion', desc: 'Afficher une pièce depuis le téléphone' },
+      { href: 'quiz.html?jeu=lisieux', icon: '🎲', title: 'Quiz Lisieux', desc: 'Culture générale, en famille' },
     ],
     enter(root) {
       const d = data.dossier;
@@ -116,23 +117,30 @@
         </div>
         <footer class="hint">Télécommande sur le téléphone : <strong>${esc(location.origin)}/remote.html</strong></footer>`;
       root.querySelectorAll('.tile').forEach((el) => {
-        el.addEventListener('click', () => go(this.tiles[Number(el.dataset.i)].view));
+        el.addEventListener('click', () => this.open(this.tiles[Number(el.dataset.i)]));
       });
       this.paint();
+    },
+    open(tile) {
+      if (tile.href) location.href = tile.href;
+      else go(tile.view);
     },
     paint() {
       $app.querySelectorAll('.tile').forEach((el, i) => el.classList.toggle('focused', i === this.focus));
     },
     key(k) {
-      const moves = { left: -1, right: 1, up: -2, down: 2 };
+      const moves = { left: -1, right: 1, up: -3, down: 3 };
       if (k in moves) {
-        const next = this.focus + moves[k];
-        if (next >= 0 && next < this.tiles.length) this.focus = next;
+        const last = this.tiles.length - 1;
+        let next = this.focus + moves[k];
+        // Pas de tuile juste en dessous (dernière ligne incomplète) : aller à la dernière.
+        if (k === 'down' && next > last && Math.floor(this.focus / 3) < Math.floor(last / 3)) next = last;
+        if (next >= 0 && next <= last) this.focus = next;
         this.paint();
         return true;
       }
       if (k === 'ok') {
-        go(this.tiles[this.focus].view);
+        this.open(this.tiles[this.focus]);
         return true;
       }
       return false;

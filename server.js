@@ -1,14 +1,24 @@
-// Serveur local Lexia TV : sert l'application TV, la télécommande mobile,
+// Serveur Lexia TV : sert l'application TV, la télécommande mobile,
 // les données JSON, et relaie les commandes téléphone -> TV (Server-Sent Events).
+// Sert aussi l'écran d'accueil des voyageurs (/accueil/<clé>/).
 // Aucune dépendance : `node server.js` suffit.
+//
+// LEXIA_MODE=accueil : seul l'écran d'accueil est servi (pour un serveur sur Internet) ;
+// dossier, plaidoirie, données locatives et télécommande ne sont plus accessibles.
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { createAccueil } = require('./lib/accueil');
 
 const PORT = Number(process.env.PORT) || 8080;
+const HOST = process.env.HOST || '0.0.0.0';
+const MODE_ACCUEIL = process.env.LEXIA_MODE === 'accueil';
 const ROOT = __dirname;
+const PUBLIC = path.join(ROOT, 'public');
+const ACCUEIL_FILES = new Set(['', 'index.html', 'accueil.js', 'accueil.css', 'common.js', 'quiz.html', 'quiz.js', 'quiz.css']);
+const accueil = createAccueil(ROOT, { exemple: !MODE_ACCUEIL });
 const STATIC_DIRS = { '/data/': path.join(ROOT, 'data'), '/': path.join(ROOT, 'public') };
 
 const MIME = {
@@ -43,6 +53,44 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+function sendFile(res, file, extraHeaders = {}) {
+  fs.readFile(file, (err, content) => {
+    if (err) return sendJson(res, 404, { error: 'not found' });
+    res.writeHead(200, {
+      'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
+      'Cache-Control': 'no-cache',
+      ...extraHeaders,
+    });
+    res.end(content);
+  });
+}
+
+// /accueil/<clé>/…  — la page, ses fichiers, /api et /photo/<nom>.
+async function serveAccueil(req, res, pathname) {
+  const [, , cle, ...rest] = pathname.split('/');
+  const logement = accueil.findLogement(decodeURIComponent(cle || ''));
+  if (!logement) return sendJson(res, 404, { error: 'not found' });
+  const privacy = { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' };
+  if (rest.length === 0) {
+    res.writeHead(301, { Location: `${encodeURIComponent(cle)}/` });
+    return res.end();
+  }
+  const sub = rest.join('/');
+  if (sub === 'api') {
+    const body = await accueil.payload(logement);
+    res.writeHead(200, { 'Content-Type': MIME['.json'], 'Cache-Control': 'no-store', ...privacy });
+    return res.end(JSON.stringify(body));
+  }
+  if (rest[0] === 'photo' && rest.length === 2) {
+    const file = accueil.photoPath(logement, decodeURIComponent(rest[1]));
+    return file ? sendFile(res, file, { 'Cache-Control': 'max-age=86400', ...privacy }) : sendJson(res, 404, { error: 'not found' });
+  }
+  if (ACCUEIL_FILES.has(sub) || /^quiz-[a-z0-9-]+\.json$/.test(sub)) {
+    return sendFile(res, path.join(PUBLIC, sub === '' || sub === 'index.html' ? 'accueil.html' : sub), privacy);
+  }
+  return sendJson(res, 404, { error: 'not found' });
+}
+
 function serveStatic(req, res, pathname) {
   const prefix = pathname.startsWith('/data/') ? '/data/' : '/';
   const base = STATIC_DIRS[prefix];
@@ -50,15 +98,10 @@ function serveStatic(req, res, pathname) {
   if (rel === '' || rel.endsWith('/')) rel += 'index.html';
   const file = path.resolve(base, rel);
   if (file !== base && !file.startsWith(base + path.sep)) return sendJson(res, 403, { error: 'forbidden' });
+  // Clés des logements, Wi-Fi… : jamais servis tels quels.
+  if (prefix === '/data/' && (rel.startsWith('prive/') || rel.startsWith('accueil'))) return sendJson(res, 404, { error: 'not found' });
 
-  fs.readFile(file, (err, content) => {
-    if (err) return sendJson(res, 404, { error: 'not found' });
-    res.writeHead(200, {
-      'Content-Type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
-      'Cache-Control': 'no-cache',
-    });
-    res.end(content);
-  });
+  sendFile(res, file);
 }
 
 function readBody(req, limit = 64 * 1024) {
@@ -78,6 +121,16 @@ function readBody(req, limit = 64 * 1024) {
 
 const server = http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url, 'http://localhost');
+
+  if (pathname.startsWith('/accueil/') && req.method === 'GET') {
+    try {
+      return await serveAccueil(req, res, pathname);
+    } catch (e) {
+      console.error(e);
+      return sendJson(res, 500, { error: 'erreur' });
+    }
+  }
+  if (MODE_ACCUEIL) return sendJson(res, 404, { error: 'not found' });
 
   if (pathname === '/api/events' && req.method === 'GET') {
     res.writeHead(200, {
@@ -115,8 +168,9 @@ setInterval(() => {
   for (const res of clients) res.write(': ping\n\n');
 }, 25000).unref();
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Lexia TV prête sur le port ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`Lexia TV prête sur le port ${PORT}${MODE_ACCUEIL ? ' (mode accueil seul)' : ''}`);
+  if (MODE_ACCUEIL) return;
   for (const ip of lanAddresses()) {
     console.log(`  TV (Fire TV / Silk) : http://${ip}:${PORT}/`);
     console.log(`  Téléphone          : http://${ip}:${PORT}/remote.html`);

@@ -5,7 +5,9 @@
   "description": "Lexia sur Fire TV : préparation d'audience, prompteur de plaidoirie, diffusion depuis le téléphone, gestion locative.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "accueil": "LEXIA_MODE=accueil node server.js",
+    "cle": "node -e \"console.log(require('crypto').randomBytes(18).toString('base64url'))\""
   },
   "engines": {
     "node": ">=18"
