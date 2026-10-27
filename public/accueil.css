@@ -113,7 +113,7 @@ h1 {
 /* Bas d'écran : actus + rappel du guide */
 .bottom { margin-top: 1.2rem; display: flex; align-items: baseline; gap: 2rem; min-height: 2rem; }
 #hint { margin-left: auto; flex-shrink: 0; font-size: 1.05rem; color: var(--muted); }
-.photo-only #hint { opacity: 0; }
+.photo-only #hint, .veille #hint { opacity: 0; }
 
 /* Actus */
 #news {

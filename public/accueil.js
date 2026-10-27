@@ -421,6 +421,9 @@
     e.preventDefault();
   });
 
+  // Économiseur d'écran de l'appli Fire TV (?veille=1) : pas de rappel des touches.
+  if (new URLSearchParams(location.search).has('veille')) document.body.classList.add('veille');
+
   setInterval(renderClock, 10 * 1000);
   setInterval(() => {
     if (!state.data) return;

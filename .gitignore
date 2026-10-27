@@ -2,3 +2,8 @@ node_modules/
 .DS_Store
 # Vrais dossiers : à garder hors du dépôt
 data/prive/
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties

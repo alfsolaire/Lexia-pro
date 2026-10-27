@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Android 10 et plus (Fire OS 8) : sans cette autorisation, une application
+         ne peut pas se mettre au premier plan toute seule au réveil de la TV. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <application
+        android:allowBackup="false"
+        android:banner="@drawable/banner"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Exportée pour pouvoir régler l'adresse par adb :
+             adb shell am start -n com.lexia.accueil/.SetupActivity -e url https://… -->
+        <activity
+            android:name=".SetupActivity"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize" />
+
+        <receiver
+            android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Économiseur d'écran. Sur Fire TV, à choisir par adb :
+             adb shell settings put secure screensaver_components com.lexia.accueil/.AccueilDream -->
+        <service
+            android:name=".AccueilDream"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".WakeService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Ouvre l'écran d'accueil du logement quand la TV se rallume" />
+        </service>
+    </application>
+</manifest>

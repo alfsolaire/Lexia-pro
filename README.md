@@ -120,13 +120,42 @@ User=www-data
 WantedBy=multi-user.target
 ```
 
-### Sur la Fire TV du logement
+### Sur la Fire TV du logement : l'application « Accueil TV »
 
-1. Installer **Silk** (le navigateur d'Amazon) depuis l'Appstore.
-2. Ouvrir `https://<serveur>/accueil/<clé>/`, l'ajouter aux **favoris**, puis passer en plein écran.
-3. Paramètres → Affichage et sons → **Économiseur d'écran** : le désactiver ou le retarder.
+Une petite application Android (dossier `android/`) affiche l'écran d'accueil en plein écran, **sans passer par Silk** :
 
-Silk ne s'ouvre pas tout seul au démarrage de la Fire TV. Pour ça, il faudra une petite application (APK) qui ouvre directement l'écran d'accueil : voir les pistes plus bas.
+- elle s'ouvre **au démarrage** de la Fire TV ;
+- elle s'ouvre **quand la TV se rallume** : une Fire TV se met en veille, elle ne redémarre presque jamais ;
+- elle sert d'**économiseur d'écran** : l'écran d'accueil (photos, météo, prénom) remplace le diaporama d'Amazon, et un appui sur la télécommande ouvre l'écran d'accueil complet ;
+- si la connexion tombe, elle réessaie toute seule toutes les 30 secondes ;
+- elle reste sur votre serveur : pas de navigation vers d'autres sites. Le voyageur garde la touche Accueil (⌂) pour Netflix et le reste ;
+- réglages cachés : **5 appuis sur ☰** (Menu) de la télécommande.
+
+GitHub compile l'APK à chaque modification du dossier `android/` (onglet *Actions*) et le publie à une adresse fixe :
+`https://github.com/alfsolaire/Lexia-pro/releases/download/accueil-tv/AccueilTV.apk`
+
+**Installation (une fois par Fire TV) :**
+
+1. Fire TV → Paramètres → Ma Fire TV → **Options pour les développeurs** (si elles n'apparaissent pas : Ma Fire TV → À propos → 7 appuis sur le nom de l'appareil). Autoriser l'installation d'applications inconnues pour **Downloader**, et activer le **débogage ADB** (utile aux étapes 4 et 5).
+2. Installer **Downloader** depuis l'Appstore, y taper l'adresse de l'APK ci-dessus, puis installer.
+3. Ouvrir **Accueil TV** et saisir l'adresse de l'écran du logement (`https://<serveur>/accueil/<clé>/`). L'appli **Amazon Fire TV** du téléphone donne un clavier pour la taper. Puis « Enregistrer et ouvrir ».
+4. **Ouverture automatique** : sur Fire OS 8, il faut l'autorisation « Afficher par-dessus les autres applications ». Le bouton « Autoriser l'ouverture automatique » l'ouvre quand Fire OS le permet. Sinon, depuis un ordinateur sur le même Wi-Fi (ADB) :
+   ```bash
+   adb connect <ip-de-la-fire-tv>
+   adb shell appops set com.lexia.accueil SYSTEM_ALERT_WINDOW allow
+   ```
+5. **Économiseur d'écran** : Fire OS ne propose pas les économiseurs des autres applications dans ses menus. Il se choisit par ADB :
+   ```bash
+   adb shell settings put secure screensaver_components com.lexia.accueil/.AccueilDream
+   ```
+   Le délai se règle toujours dans Paramètres → Affichage et sons → Économiseur d'écran. Pour revenir à celui d'Amazon : `adb shell settings delete secure screensaver_components`.
+
+Autre façon de régler l'adresse, sans clavier : `adb shell am start -n com.lexia.accueil/.SetupActivity -e url "https://<serveur>/accueil/<clé>/"`.
+
+> **À savoir :**
+> - Seules les Fire TV sous **Fire OS** (Android) installent des APK. Les modèles récents sous **Vega OS** ne le permettent pas : sur ceux-là, il reste Silk (`https://<serveur>/accueil/<clé>/` en favori).
+> - Pas encore essayé sur une vraie Fire TV, en particulier l'ouverture au réveil et l'économiseur, qui dépendent de la version de Fire OS.
+> - Signature : sans secrets GitHub (`KEYSTORE_BASE64`…), l'APK est signé avec la clé partagée `android/app/accueil-partage.jks`, toujours la même, pour que les mises à jour s'installent par-dessus sans perdre l'adresse. Cette clé est publique (dépôt public) : pour une clé à vous, ajoutez les secrets du dépôt, en sachant qu'il faudra alors désinstaller puis réinstaller l'appli une fois.
 
 ## Confidentialité
 
@@ -146,11 +175,11 @@ public/remote.*      télécommande mobile
 public/common.js     utilitaires partagés (dates, échappement HTML)
 data/*.json          contenus d'exemple ; data/prive/ pour les vrais (non publié)
 docs/                consignes pour Courte durée
+android/             application Fire TV « Accueil TV » (Java, sans dépendance) ; APK compilé par GitHub Actions
 ```
 
 ## Pistes suivantes
 
-- Empaqueter en APK (WebView) pour lancer l'écran d'accueil au démarrage de la Fire TV du logement, sans passer par Silk.
 - Un message ponctuel du loueur sur la télé du logement (champ `message` de la fiche Courte durée).
 - Le quiz en anglais pour les voyageurs étrangers ; d'autres quiz (jurisprudence…) : un fichier `public/quiz-<nom>.json` de plus.
 - Afficher les PDF des pièces (rendu page par page avec pdf.js).
