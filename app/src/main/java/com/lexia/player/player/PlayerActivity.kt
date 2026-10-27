@@ -247,6 +247,24 @@ class PlayerActivity : ComponentActivity() {
             showOverlay("▶  Retour au direct", 2500)
             return true
         }
+        // Films et séries : ◀ / ⏪ recule de 10 s, ▶ / ⏩ avance de 10 s (commandes masquées).
+        if (!isLive && event.action == KeyEvent.ACTION_DOWN && ::playerView.isInitialized && !playerView.isControllerFullyVisible) {
+            val p = player
+            if (p != null) {
+                when (event.keyCode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_REWIND -> {
+                        p.seekBack()
+                        showOverlay("⏪  −10 s   (${formatTime(p.currentPosition)})", 1500)
+                        return true
+                    }
+                    KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                        p.seekForward()
+                        showOverlay("⏩  +10 s   (${formatTime(p.currentPosition)})", 1500)
+                        return true
+                    }
+                }
+            }
+        }
         if (isLive && event.action == KeyEvent.ACTION_DOWN && ::playerView.isInitialized && !playerView.isControllerFullyVisible) {
             when (event.keyCode) {
                 KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {

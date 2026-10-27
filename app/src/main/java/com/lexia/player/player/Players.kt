@@ -22,6 +22,8 @@ fun buildExoPlayer(context: Context, pauseBuffer: Boolean = false): ExoPlayer {
         .setReadTimeoutMs(30_000)
     val builder = ExoPlayer.Builder(context)
         .setMediaSourceFactory(DefaultMediaSourceFactory(DefaultDataSource.Factory(context, http)))
+        .setSeekBackIncrementMs(SEEK_STEP_MS)
+        .setSeekForwardIncrementMs(SEEK_STEP_MS)
     if (pauseBuffer) {
         // Mémoire tampon plus grande : permet de mettre le direct en pause puis de reprendre en différé.
         builder.setLoadControl(
@@ -34,6 +36,9 @@ fun buildExoPlayer(context: Context, pauseBuffer: Boolean = false): ExoPlayer {
     }
     return builder.build()
 }
+
+/** Saut des touches ◀ / ▶ (et ⏪ / ⏩) dans les films et séries. */
+const val SEEK_STEP_MS = 10_000L
 
 /** Durée maximale conservée pendant une pause du direct (limitée aussi par la mémoire). */
 const val PAUSE_BUFFER_MS = 120_000L

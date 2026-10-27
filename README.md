@@ -19,6 +19,7 @@ Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dan
 - **Plusieurs comptes** : bouton *Comptes* sur l'accueil ; favoris et historique propres à chaque compte.
 - **Classement des catégories** : tri A → Z ou ordre du serveur, et ☰ sur une catégorie pour l'épingler en haut.
 - **Connexion par QR code** : l'écran de connexion affiche un QR code ; le téléphone (même Wi-Fi) ouvre une page servie par la Fire TV et y envoie l'abonnement.
+- **Films et séries** : ◀ / ⏪ recule de 10 s, ▶ / ⏩ avance de 10 s.
 - **Pause du direct** (touche ⏯) : la chaîne est enregistrée sur l'appareil pendant la pause (jusqu'à 2 Go) puis relue en différé ; ⏩ ou ▲/▼ pour revenir au direct.
 - Infos du compte : date d'expiration, nombre de connexions.
 - Format du direct au choix (MPEG-TS ou HLS) si un serveur pose problème.
