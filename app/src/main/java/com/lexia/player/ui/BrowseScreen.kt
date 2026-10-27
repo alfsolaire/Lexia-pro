@@ -48,7 +48,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.view.ViewGroup
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
+import com.lexia.player.player.PreviewPlayer
 import com.lexia.player.data.Category
 import com.lexia.player.data.Content
 import com.lexia.player.data.ContentType
@@ -221,10 +232,11 @@ fun BrowseScreen(
                             Box(Modifier.weight(1f).fillMaxHeight()) {
                                 ChannelList(visible, favorites, selected + query, open, toggleFavorite) { focusedChannel = it }
                             }
-                            if (showEpg) {
-                                Spacer(Modifier.width(16.dp))
-                                EpgPanel(focusedChannel, epg, Modifier.width(330.dp).fillMaxHeight().padding(bottom = 20.dp))
-                            }
+                            Spacer(Modifier.width(16.dp))
+                            EpgPanel(
+                                focusedChannel, if (showEpg) epg else emptyList(), showEpg,
+                                Modifier.width(340.dp).fillMaxHeight().padding(bottom = 20.dp),
+                            )
                         }
                     } else {
                         PosterGrid(visible, favorites, selected + query, open, toggleFavorite) { item ->
@@ -392,36 +404,29 @@ private fun PosterGrid(
 }
 
 @Composable
-private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, modifier: Modifier) {
-    Column(modifier.background(Panel, RoundedCornerShape(10.dp)).padding(18.dp)) {
-        Text("GUIDE DES PROGRAMMES", color = TextDim, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, hasGuide: Boolean, modifier: Modifier) {
+    Column(modifier.background(Panel, RoundedCornerShape(10.dp)).padding(14.dp)) {
+        LivePreview(channel, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(8.dp)))
         Spacer(Modifier.height(10.dp))
         if (channel == null) {
-            Text("Placez-vous sur une chaîne pour voir son programme.", color = TextDim, fontSize = 15.sp)
+            Text("Placez-vous sur une chaîne pour voir son aperçu et son programme.", color = TextDim, fontSize = 15.sp)
             return@Column
         }
-        AsyncImage(
-            model = channel.logo,
-            contentDescription = null,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.height(56.dp).fillMaxWidth(),
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(channel.name, color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 2)
-        Spacer(Modifier.height(14.dp))
+        Text(channel.name, color = TextMain, fontSize = 19.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(10.dp))
         val now = System.currentTimeMillis()
         val current = epg?.firstOrNull { it.start <= now && it.end > now }
         val next = epg?.firstOrNull { it.start >= (current?.end ?: now) }
         when {
-            epg == null -> Text("Chargement du programme…", color = TextDim, fontSize = 15.sp)
+            !hasGuide -> Text("Guide des programmes disponible avec les comptes Xtream Codes.", color = TextDim, fontSize = 14.sp)
+            epg == null -> Text("Chargement du programme…", color = TextDim, fontSize = 14.sp)
             current == null && next == null ->
-                Text("Pas de programme disponible pour cette chaîne.", color = TextDim, fontSize = 15.sp)
+                Text("Le fournisseur ne propose pas de programme pour cette chaîne.", color = TextDim, fontSize = 14.sp)
             else -> {
                 current?.let {
-                    Text("EN COURS", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text(it.title, color = TextMain, fontSize = 18.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text(timeRange(it), color = TextDim, fontSize = 14.sp)
-                    Spacer(Modifier.height(6.dp))
+                    Text("EN COURS  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(it.title, color = TextMain, fontSize = 17.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.height(4.dp))
                     val fraction = ((now - it.start).toFloat() / (it.end - it.start).coerceAtLeast(1)).coerceIn(0f, 1f)
                     LinearProgressIndicator(
                         progress = { fraction },
@@ -430,17 +435,69 @@ private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, modifier: Modifier
                         modifier = Modifier.fillMaxWidth(),
                     )
                     it.description?.let { d ->
-                        Spacer(Modifier.height(8.dp))
-                        Text(d, color = TextDim, fontSize = 13.sp, maxLines = 5, overflow = TextOverflow.Ellipsis)
+                        Spacer(Modifier.height(6.dp))
+                        Text(d, color = TextDim, fontSize = 12.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
                     }
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(12.dp))
                 }
                 next?.let {
-                    Text("ENSUITE", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text(it.title, color = TextMain, fontSize = 17.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    Text(timeRange(it), color = TextDim, fontSize = 14.sp)
+                    Text("ENSUITE  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(it.title, color = TextMain, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
+        }
+    }
+}
+
+/** Aperçu vidéo de la chaîne sélectionnée (démarre après une courte pause sur la chaîne). */
+@Composable
+private fun LivePreview(channel: Content?, modifier: Modifier) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var active by remember { mutableStateOf(true) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    active = false
+                    PreviewPlayer.stop()
+                }
+                Lifecycle.Event.ON_RESUME -> active = true
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            PreviewPlayer.stop()
+        }
+    }
+
+    LaunchedEffect(channel?.url, active) {
+        PreviewPlayer.stop()
+        val url = channel?.url ?: return@LaunchedEffect
+        if (!active) return@LaunchedEffect
+        delay(900) // laisse défiler la liste sans ouvrir un flux par chaîne
+        PreviewPlayer.play(context, url)
+    }
+
+    Box(modifier.background(Color.Black), contentAlignment = Alignment.Center) {
+        AndroidView(
+            factory = { ctx ->
+                PlayerView(ctx).apply {
+                    useController = false
+                    isFocusable = false
+                    descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+                    setShutterBackgroundColor(android.graphics.Color.BLACK)
+                    player = PreviewPlayer.get(ctx)
+                }
+            },
+            onRelease = { it.player = null },
+            modifier = Modifier.fillMaxSize(),
+        )
+        if (channel == null) {
+            Text("Aperçu", color = TextDim, fontSize = 14.sp)
         }
     }
 }

@@ -114,20 +114,41 @@ class XtreamProvider(
         val entries = if (cached != null && now - cached.first < EPG_CACHE_MS) {
             cached.second
         } else {
-            val json = JSONTokener(Http.get(api("get_short_epg", "&stream_id=${channel.id}&limit=4"))).nextValue() as? JSONObject
-            val listings = json?.optJSONArray("epg_listings")?.objects().orEmpty().mapNotNull { e ->
-                val start = e.str("start_timestamp")?.toLongOrNull() ?: return@mapNotNull null
-                val end = e.str("stop_timestamp")?.toLongOrNull() ?: return@mapNotNull null
-                EpgEntry(decodeBase64(e.str("title")) ?: "Sans titre", decodeBase64(e.str("description")), start * 1000, end * 1000)
-            }.sortedBy { it.start }
+            // get_short_epg est le plus léger ; certains panneaux ne le remplissent pas,
+            // on tente alors le guide complet de la journée (get_simple_data_table).
+            var listings = fetchEpg("get_short_epg", "&stream_id=${channel.id}&limit=10")
+            if (listings.none { it.end > now }) {
+                listings = fetchEpg("get_simple_data_table", "&stream_id=${channel.id}")
+            }
             epgCache[channel.id] = now to listings
             listings
         }
         return entries.filter { it.end > now }
     }
 
+    private suspend fun fetchEpg(action: String, extra: String): List<EpgEntry> {
+        val json = runCatching { JSONTokener(Http.get(api(action, extra))).nextValue() as? JSONObject }.getOrNull()
+            ?: return emptyList()
+        return json.optJSONArray("epg_listings")?.objects().orEmpty().mapNotNull { e ->
+            val start = e.str("start_timestamp")?.toLongOrNull()?.times(1000) ?: parseEpgDate(e.str("start"))
+                ?: return@mapNotNull null
+            val end = e.str("stop_timestamp")?.toLongOrNull()?.times(1000)
+                ?: parseEpgDate(e.str("stop") ?: e.str("end"))
+                ?: return@mapNotNull null
+            EpgEntry(decodeBase64(e.str("title")) ?: "Sans titre", decodeBase64(e.str("description")), start, end)
+        }.distinctBy { it.start }.sortedBy { it.start }
+    }
+
     companion object {
         private const val EPG_CACHE_MS = 5 * 60 * 1000L
+
+        /** Dates du guide au format « 2026-10-27 20:00:00 » (heure locale du serveur, supposée identique). */
+        private fun parseEpgDate(value: String?): Long? {
+            if (value == null) return null
+            return runCatching {
+                java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US).parse(value)?.time
+            }.getOrNull()
+        }
 
         /** Les panneaux Xtream encodent titres et descriptions du guide en Base64. */
         private fun decodeBase64(value: String?): String? {

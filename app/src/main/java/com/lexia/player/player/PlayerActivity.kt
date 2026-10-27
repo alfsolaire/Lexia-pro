@@ -15,20 +15,14 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import com.lexia.player.billing.Licensing
 import com.lexia.player.data.Content
 import com.lexia.player.data.ContentType
-import com.lexia.player.data.Http
 import com.lexia.player.data.Prefs
 import com.lexia.player.data.Session
 import com.lexia.player.data.favoriteKey
@@ -102,14 +96,8 @@ class PlayerActivity : ComponentActivity() {
 
     private fun initPlayer() {
         if (player != null) return
-        val http = DefaultHttpDataSource.Factory()
-            .setUserAgent(Http.USER_AGENT)
-            .setAllowCrossProtocolRedirects(true)
-            .setConnectTimeoutMs(15_000)
-            .setReadTimeoutMs(30_000)
-        val exo = ExoPlayer.Builder(this)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(DefaultDataSource.Factory(this, http)))
-            .build()
+        PreviewPlayer.stop()
+        val exo = buildExoPlayer(this)
         exo.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 showOverlay("Lecture impossible (${error.errorCodeName}). Essayez une autre chaîne ou changez le format du direct.", 8000)
@@ -153,11 +141,9 @@ class PlayerActivity : ComponentActivity() {
         // Les épisodes sont mémorisés via leur série (au moment de l'ouvrir).
         if (item.type != ContentType.SERIES) prefs.addRecent(item.type, favoriteKey(item))
 
-        val builder = MediaItem.Builder().setUri(url)
-        if (url.contains(".m3u8", ignoreCase = true)) builder.setMimeType(MimeTypes.APPLICATION_M3U8)
         val resumeAt = if (item.type == ContentType.LIVE) null else prefs.resumePosition(url)
         player?.run {
-            if (resumeAt != null) setMediaItem(builder.build(), resumeAt) else setMediaItem(builder.build())
+            if (resumeAt != null) setMediaItem(mediaItemFor(url), resumeAt) else setMediaItem(mediaItemFor(url))
             prepare()
             play()
         }

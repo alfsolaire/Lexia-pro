@@ -19,6 +19,7 @@ import com.lexia.player.data.ContentType
 import com.lexia.player.data.Prefs
 import com.lexia.player.data.Session
 import com.lexia.player.player.PlayQueue
+import com.lexia.player.player.PreviewPlayer
 import com.lexia.player.player.PlayerActivity
 import com.lexia.player.ui.AccountsScreen
 import com.lexia.player.ui.Bg
@@ -47,6 +48,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             LexiaTheme {
                 App(prefs) { items, index ->
+                    PreviewPlayer.stop()
                     PlayQueue.set(items, index)
                     startActivity(Intent(this, PlayerActivity::class.java))
                 }
