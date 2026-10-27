@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Associer cette télé</title>
+  <style>
+    :root { font-size: calc(100vw / 80); }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(ellipse at 50% 0%, #2b3a55 0%, #121722 65%); color: #fbfaf7; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6rem; text-align: center; padding: 0 4rem; box-sizing: border-box; }
+    h1 { margin: 0; font-size: 2.6rem; font-weight: 650; }
+    .code { font-size: 9rem; font-weight: 700; letter-spacing: 0.12em; color: #f3c46b; font-variant-numeric: tabular-nums; line-height: 1; }
+    p { margin: 0; font-size: 1.6rem; color: rgba(251, 250, 247, 0.75); line-height: 1.5; }
+    strong { color: #fbfaf7; }
+    .small { font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Associer cette télé à un logement</h1>
+    <div class="code" id="code">······</div>
+    <p>Sur votre téléphone, ouvrez <strong id="adresse"></strong><br>et saisissez ce code.</p>
+    <p class="small" id="etat">Le code change toutes les 10 minutes.</p>
+  </main>
+  <script>
+    // Demande un code, l'affiche, puis attend que le loueur le valide depuis son téléphone.
+    (() => {
+      const $code = document.getElementById('code');
+      const $etat = document.getElementById('etat');
+      document.getElementById('adresse').textContent = `${location.host}/tv`;
+      let id = null;
+
+      async function nouveau() {
+        try {
+          const res = await fetch('/appairage/nouveau', { method: 'POST' });
+          if (!res.ok) throw new Error(res.status);
+          const d = await res.json();
+          id = d.id;
+          $code.textContent = `${d.code.slice(0, 3)} ${d.code.slice(3)}`;
+          $etat.textContent = 'Le code change toutes les 10 minutes.';
+          setTimeout(suivre, 3000);
+        } catch (e) {
+          $etat.textContent = 'Serveur injoignable, nouvel essai dans 20 secondes…';
+          setTimeout(nouveau, 20000);
+        }
+      }
+
+      async function suivre() {
+        try {
+          const res = await fetch(`/appairage/etat/${encodeURIComponent(id)}`, { cache: 'no-store' });
+          const d = await res.json();
+          if (d.etat === 'valide') {
+            $etat.textContent = 'Télé associée ✓';
+            location.replace(d.url);
+            return;
+          }
+          if (d.etat === 'expire') return nouveau();
+        } catch (e) {
+          // réseau coupé : on réessaie au prochain tour
+        }
+        setTimeout(suivre, 3000);
+      }
+
+      nouveau();
+    })();
+  </script>
+</body>
+</html>

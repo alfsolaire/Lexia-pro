@@ -86,23 +86,39 @@ Fichier `data/prive/accueil.json` sur le serveur (le dossier `data/prive/` n'est
 }
 ```
 
-- Une clé par logement : `npm run cle` en fabrique une (24 caractères au hasard). Changer la clé coupe l'ancienne adresse.
+- Une clé par logement : `npm run cle` en fabrique une (24 caractères au hasard). Changer la clé coupe l'ancienne adresse ; la télé revient alors d'elle-même à l'écran du code.
+- La clé ne se tape jamais sur la télé : voir « Associer une télé » ci-dessous.
 - Ce qui est dans un logement (photos, agenda, actus…) l'emporte sur les réglages communs.
 - Le quiz est proposé automatiquement si la ville est Lisieux (`"quiz": null` pour l'enlever).
+
+### Associer une télé (code à 6 chiffres)
+
+1. La télé ouvre `https://<serveur>/` (l'application Accueil TV le fait toute seule) : elle affiche un **code à 6 chiffres**.
+2. Sur votre téléphone, ouvrez `https://<serveur>/tv`, entrez le **mot de passe**, le code, et choisissez le logement.
+3. La télé passe d'elle-même à l'écran d'accueil de ce logement, et l'application le retient.
+
+Le code ne vaut que 10 minutes et ne sert qu'une fois. Seule la télé qui l'affiche reçoit l'adresse secrète, et rien ne se valide sans le mot de passe. Il n'y a volontairement **pas d'adresse courte** du type `…/tv/1` : elle se devinerait, et n'importe qui lirait alors le prénom des voyageurs.
+
+Le mot de passe de la page `/tv` se règle par la variable d'environnement `LEXIA_ADMIN` (ou `"admin": { "motDePasse": "…" }` dans la configuration). Sans lui, l'appairage est désactivé.
 
 ### Sur le serveur
 
 ```bash
-LEXIA_MODE=accueil PORT=8090 HOST=127.0.0.1 node server.js     # ou : npm run accueil
+LEXIA_MODE=accueil LEXIA_ADMIN='<mot de passe>' PORT=8090 HOST=127.0.0.1 node server.js
 ```
 
 En **mode accueil**, le serveur ne sert **que** les écrans d'accueil : le dossier prud'hommes, le prompteur, la gestion locative et la télécommande ne sont plus accessibles. Une mauvaise clé renvoie une erreur 404. Seul le prénom du voyageur en cours sort du serveur, jamais son nom ni les autres séjours. Le fichier d'exemple n'est jamais utilisé dans ce mode.
 
-Derrière le serveur web existant (HTTPS), par exemple avec nginx :
+Le plus simple : un **sous-domaine dédié** (par exemple `tv.votre-domaine.fr`), en HTTPS, entièrement envoyé vers Lexia. Avec nginx :
 
 ```nginx
-location /accueil/ {
-    proxy_pass http://127.0.0.1:8090;
+server {
+    server_name tv.votre-domaine.fr;
+    # … certificat HTTPS habituel …
+    location / {
+        proxy_pass http://127.0.0.1:8090;
+        proxy_set_header X-Forwarded-For $remote_addr;
+    }
 }
 ```
 
@@ -112,6 +128,8 @@ Et pour qu'il redémarre tout seul, un service systemd `/etc/systemd/system/lexi
 [Service]
 WorkingDirectory=/srv/lexia-tv
 Environment=LEXIA_MODE=accueil PORT=8090 HOST=127.0.0.1
+# Contient LEXIA_ADMIN=<mot de passe> ; lisible par root seulement (chmod 600)
+EnvironmentFile=/etc/lexia-accueil.env
 ExecStart=/usr/bin/node server.js
 Restart=always
 User=www-data
@@ -138,7 +156,7 @@ GitHub compile l'APK à chaque modification du dossier `android/` (onglet *Actio
 
 1. Fire TV → Paramètres → Ma Fire TV → **Options pour les développeurs** (si elles n'apparaissent pas : Ma Fire TV → À propos → 7 appuis sur le nom de l'appareil). Autoriser l'installation d'applications inconnues pour **Downloader**, et activer le **débogage ADB** (utile aux étapes 4 et 5).
 2. Installer **Downloader** depuis l'Appstore, y taper l'adresse de l'APK ci-dessus, puis installer.
-3. Ouvrir **Accueil TV** et saisir l'adresse de l'écran du logement (`https://<serveur>/accueil/<clé>/`). L'appli **Amazon Fire TV** du téléphone donne un clavier pour la taper. Puis « Enregistrer et ouvrir ».
+3. Ouvrir **Accueil TV** et saisir l'adresse courte du serveur (`tv.votre-domaine.fr`, sans `https://`), puis « Enregistrer et ouvrir ». La télé affiche un code : validez-le depuis le téléphone (« Associer une télé » ci-dessus). Si l'adresse du serveur est intégrée à l'APK (variable `LEXIA_SERVEUR` du dépôt GitHub, dans *Settings → Secrets and variables → Actions → Variables*), il n'y a **rien à taper** : le code s'affiche dès l'ouverture. En attendant Lexia, n'importe quelle adresse `https://…` marche aussi (le livret d'accueil, par exemple).
 4. **Ouverture automatique** : sur Fire OS 8, il faut l'autorisation « Afficher par-dessus les autres applications ». Le bouton « Autoriser l'ouverture automatique » l'ouvre quand Fire OS le permet. Sinon, depuis un ordinateur sur le même Wi-Fi (ADB) :
    ```bash
    adb connect <ip-de-la-fire-tv>

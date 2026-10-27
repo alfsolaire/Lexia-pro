@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0f1218">
+  <title>Associer une télé</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0f1218; color: #eef1f6; font: 17px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: max(20px, env(safe-area-inset-top)) 16px 32px; }
+    main { max-width: 420px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+    h1 { margin: 0; font-size: 24px; }
+    p { margin: 0; color: #9aa3b2; }
+    label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+    input, select, button { font: inherit; border-radius: 12px; border: 1px solid #2a3140; background: #181d26; color: inherit; padding: 14px; }
+    input { font-size: 30px; letter-spacing: 0.2em; text-align: center; font-variant-numeric: tabular-nums; }
+    button { background: #e0b25c; color: #1a1408; border: 0; font-weight: 700; cursor: pointer; }
+    button:disabled { opacity: 0.5; }
+    .msg { min-height: 1.5em; font-weight: 600; }
+    .ok { color: #6cc28a; }
+    .ko { color: #e0716b; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Associer une télé</h1>
+    <p>Saisissez le code affiché sur la télé, puis choisissez le logement où elle se trouve.</p>
+    <form id="form">
+      <label>Code de la télé
+        <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000 000" required>
+      </label>
+      <br>
+      <label>Logement
+        <select id="logement" required></select>
+      </label>
+      <br>
+      <button id="go" type="submit">Associer cette télé</button>
+    </form>
+    <div class="msg" id="msg"></div>
+  </main>
+  <script>
+    (() => {
+      const $form = document.getElementById('form');
+      const $code = document.getElementById('code');
+      const $logement = document.getElementById('logement');
+      const $msg = document.getElementById('msg');
+      const $go = document.getElementById('go');
+
+      function message(text, ok) {
+        $msg.textContent = text;
+        $msg.className = `msg ${ok ? 'ok' : 'ko'}`;
+      }
+
+      fetch('/tv/logements', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((list) => {
+          for (const l of list) $logement.add(new Option(l.nom, l.id));
+          if (!list.length) message('Aucun logement configuré (data/prive/accueil.json).', false);
+        })
+        .catch(() => message('Impossible de charger les logements.', false));
+
+      $form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        $go.disabled = true;
+        try {
+          const res = await fetch('/tv/valider', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: $code.value, logement: $logement.value }),
+          });
+          const d = await res.json();
+          if (d.ok) {
+            message(`C'est fait : la télé va afficher l'écran d'accueil de « ${$logement.selectedOptions[0].text} ».`, true);
+            $code.value = '';
+          } else {
+            message(d.erreur || 'Échec.', false);
+          }
+        } catch (err) {
+          message('Serveur injoignable.', false);
+        } finally {
+          $go.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

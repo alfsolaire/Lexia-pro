@@ -10,8 +10,11 @@ android {
         applicationId = "com.lexia.accueil"
         minSdk = 22
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
+        // Adresse du serveur Lexia intégrée à l'APK (variable LEXIA_SERVEUR de GitHub Actions) :
+        // la télé affiche alors directement son code d'appairage, sans rien taper.
+        resValue("string", "serveur_defaut", System.getenv("LEXIA_SERVEUR") ?: "")
     }
 
     // Signature : la clé des secrets GitHub si elle est fournie (KEYSTORE_BASE64…),

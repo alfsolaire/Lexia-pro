@@ -5,10 +5,12 @@
     <string name="loading">Chargement de l\'écran d\'accueil…</string>
     <string name="offline">Pas de connexion pour le moment.\nNouvel essai dans 30 secondes…\n\n%1$s</string>
     <string name="setup_title">Accueil TV — réglage</string>
-    <string name="setup_help">Adresse de l\'écran d\'accueil de ce logement (https://votre-serveur/accueil/&lt;clé&gt;/).\nAstuce : l\'application « Amazon Fire TV » sur le téléphone donne un clavier pour la taper.\nPour revenir ici plus tard : 5 appuis sur la touche ☰ de la télécommande.</string>
+    <string name="setup_help">Adresse du serveur Lexia, par exemple tv.votre-domaine.fr (sans https://). La télé affichera ensuite un code à 6 chiffres à valider depuis votre téléphone.
+Une adresse complète marche aussi (https://…), par exemple le lien du livret d\'accueil en attendant.
+Pour revenir ici plus tard : 5 appuis sur la touche ☰ de la télécommande.</string>
     <string name="setup_autostart">Ouvrir automatiquement au démarrage et quand la TV se rallume</string>
     <string name="setup_save">Enregistrer et ouvrir</string>
     <string name="setup_permission">Autoriser l\'ouverture automatique</string>
     <string name="setup_permission_help">Pour l\'ouverture automatique, Fire OS demande l\'autorisation « Afficher par-dessus les autres applications ». Si le bouton ci-dessus n\'ouvre rien, depuis un ordinateur : adb shell appops set %1$s SYSTEM_ALERT_WINDOW allow</string>
-    <string name="setup_invalid">Adresse invalide : elle doit commencer par https://</string>
+    <string name="setup_invalid">Saisissez l\'adresse du serveur, par exemple tv.votre-domaine.fr</string>
 </resources>

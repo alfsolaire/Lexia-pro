@@ -53,11 +53,11 @@ public class SetupActivity extends Activity {
         url.setSingleLine(true);
         url.setTextSize(22);
         url.setTextColor(Color.WHITE);
-        url.setHint("https://votre-serveur/accueil/…/");
+        url.setHint("tv.votre-domaine.fr");
         url.setHintTextColor(Color.GRAY);
         url.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
         url.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        url.setText(Prefs.configured(this) ? Prefs.url(this) : "https://");
+        url.setText(Prefs.configured(this) ? Prefs.url(this) : "");
         url.setSelection(url.getText().length());
         url.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) save();
@@ -88,6 +88,8 @@ public class SetupActivity extends Activity {
         col.addView(message, spaced());
 
         ScrollView scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setBackgroundColor(Color.rgb(15, 18, 24));
         scroll.addView(col);
         setContentView(scroll);
         url.requestFocus();

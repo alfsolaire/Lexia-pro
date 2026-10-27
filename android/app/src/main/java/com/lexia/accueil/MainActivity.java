@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -148,6 +149,16 @@ public class MainActivity extends Activity {
         if (web != null && web.canGoBack()) web.goBack();
     }
 
+    private static boolean isWelcomePage(Uri uri) {
+        String path = uri.getPath();
+        return path != null && path.matches("/accueil/[^/]+/?");
+    }
+
+    private boolean sameHost(Uri uri) {
+        String host = Uri.parse(loadedUrl).getHost();
+        return host != null && host.equals(uri.getHost());
+    }
+
     private class Client extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -160,6 +171,23 @@ public class MainActivity extends Activity {
         @Override
         public void onPageFinished(WebView view, String url) {
             if (!failed) status.setVisibility(View.GONE);
+            // Appairage réussi : la page du code a mené à /accueil/<clé>/ ; on la garde pour la suite.
+            Uri page = Uri.parse(url);
+            if (isWelcomePage(page) && sameHost(page) && !url.equals(loadedUrl)) {
+                Prefs.saveUrl(MainActivity.this, url);
+                loadedUrl = url;
+            }
+        }
+
+        @Override
+        public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+            // Clé changée ou logement retiré : retour à la page du code pour appairer de nouveau.
+            Uri page = request.getUrl();
+            if (request.isForMainFrame() && response.getStatusCode() == 404 && isWelcomePage(page)) {
+                String root = page.getScheme() + "://" + page.getAuthority() + "/";
+                Prefs.saveUrl(MainActivity.this, root);
+                load(false);
+            }
         }
 
         @Override

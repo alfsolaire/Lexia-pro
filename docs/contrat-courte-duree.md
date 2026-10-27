@@ -107,6 +107,10 @@ Dans `data/prive/accueil.json` sur le serveur (fichier jamais publié) :
 }
 ```
 
+## Sur la télé, rien à taper
+
+Le jeton ne sert qu'entre les deux serveurs : Lexia le colle une fois dans sa configuration, et la télé ne le voit jamais. Sur la Fire TV, l'application Accueil TV affiche un **code à 6 chiffres**, que le loueur valide depuis son téléphone (`https://<serveur-lexia>/tv`, avec un mot de passe). Seule cette télé reçoit alors l'adresse secrète `…/accueil/<clé>/`. Il n'y a pas d'adresse courte du type `…/tv/1` : elle se devinerait comme un jeton court.
+
 ## Pour vérifier
 
 1. `curl -H "Authorization: Bearer <jeton>" https://<courte-durée>/<espace>/api/tv/<id>` renvoie le JSON ci-dessus.

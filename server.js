@@ -10,7 +10,9 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const crypto = require('crypto');
 const { createAccueil } = require('./lib/accueil');
+const { createAppairage } = require('./lib/appairage');
 
 const PORT = Number(process.env.PORT) || 8080;
 const HOST = process.env.HOST || '0.0.0.0';
@@ -19,6 +21,7 @@ const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, 'public');
 const ACCUEIL_FILES = new Set(['', 'index.html', 'accueil.js', 'accueil.css', 'common.js', 'quiz.html', 'quiz.js', 'quiz.css']);
 const accueil = createAccueil(ROOT, { exemple: !MODE_ACCUEIL });
+const appairage = createAppairage();
 const STATIC_DIRS = { '/data/': path.join(ROOT, 'data'), '/': path.join(ROOT, 'public') };
 
 const MIME = {
@@ -104,6 +107,63 @@ function serveStatic(req, res, pathname) {
   sendFile(res, file);
 }
 
+// Adresse du client ; derrière le serveur web local (nginx), celle qu'il transmet.
+function clientIp(req) {
+  const direct = req.socket.remoteAddress || '';
+  const local = direct === '127.0.0.1' || direct === '::1' || direct === '::ffff:127.0.0.1';
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return local && forwarded ? forwarded : direct;
+}
+
+// Page /tv : mot de passe (LEXIA_ADMIN ou "admin.motDePasse"), en Basic sur HTTPS.
+function adminOk(req) {
+  const expected = accueil.motDePasseAdmin();
+  const header = String(req.headers.authorization || '');
+  if (!expected || !header.startsWith('Basic ')) return false;
+  const decoded = Buffer.from(header.slice(6), 'base64').toString('utf8');
+  const given = decoded.slice(decoded.indexOf(':') + 1);
+  const hash = (v) => crypto.createHash('sha256').update(v).digest();
+  return crypto.timingSafeEqual(hash(given), hash(expected));
+}
+
+async function serveAppairage(req, res, pathname) {
+  const noindex = { 'X-Robots-Tag': 'noindex, nofollow', 'Referrer-Policy': 'no-referrer' };
+  if (req.method === 'GET' && (pathname === '/appairage' || (MODE_ACCUEIL && pathname === '/'))) {
+    return sendFile(res, path.join(PUBLIC, 'appairage.html'), noindex);
+  }
+  if (req.method === 'POST' && pathname === '/appairage/nouveau') {
+    const demande = appairage.creer(clientIp(req));
+    return demande ? sendJson(res, 200, demande) : sendJson(res, 429, { error: 'trop de demandes' });
+  }
+  if (req.method === 'GET' && pathname.startsWith('/appairage/etat/')) {
+    return sendJson(res, 200, appairage.etat(decodeURIComponent(pathname.slice('/appairage/etat/'.length))));
+  }
+
+  // Côté loueur, depuis le téléphone.
+  if (!accueil.motDePasseAdmin()) return sendJson(res, 503, { error: 'Appairage désactivé : définir LEXIA_ADMIN sur le serveur.' });
+  if (!adminOk(req)) {
+    res.writeHead(401, { 'WWW-Authenticate': 'Basic realm="Lexia TV", charset="UTF-8"', 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('Mot de passe requis');
+  }
+  if (req.method === 'GET' && pathname === '/tv') return sendFile(res, path.join(PUBLIC, 'tv.html'), { ...noindex, 'Cache-Control': 'no-store' });
+  if (req.method === 'GET' && pathname === '/tv/logements') return sendJson(res, 200, accueil.listLogements());
+  if (req.method === 'POST' && pathname === '/tv/valider') {
+    // JSON obligatoire : un autre site ne peut pas l'envoyer sans requête préalable (CORS).
+    if (!String(req.headers['content-type'] || '').startsWith('application/json')) return sendJson(res, 415, { ok: false, erreur: 'JSON attendu' });
+    let body;
+    try {
+      body = JSON.parse(await readBody(req, 4096));
+    } catch {
+      return sendJson(res, 400, { ok: false, erreur: 'Requête invalide' });
+    }
+    const cle = accueil.cleDe(String(body.logement || ''));
+    if (!cle) return sendJson(res, 400, { ok: false, erreur: 'Logement inconnu' });
+    const r = appairage.valider(body.code, `/accueil/${encodeURIComponent(cle)}/`);
+    return sendJson(res, r.ok ? 200 : 400, r);
+  }
+  return sendJson(res, 404, { error: 'not found' });
+}
+
 function readBody(req, limit = 64 * 1024) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -125,6 +185,14 @@ const server = http.createServer(async (req, res) => {
   if (pathname.startsWith('/accueil/') && req.method === 'GET') {
     try {
       return await serveAccueil(req, res, pathname);
+    } catch (e) {
+      console.error(e);
+      return sendJson(res, 500, { error: 'erreur' });
+    }
+  }
+  if (pathname === '/appairage' || pathname.startsWith('/appairage/') || pathname === '/tv' || pathname.startsWith('/tv/') || (MODE_ACCUEIL && pathname === '/')) {
+    try {
+      return await serveAppairage(req, res, pathname);
     } catch (e) {
       console.error(e);
       return sendJson(res, 500, { error: 'erreur' });
