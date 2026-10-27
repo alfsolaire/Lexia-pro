@@ -1,9 +1,7 @@
 package com.lexia.player.data
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import java.io.IOException
 
 /** Lit une playlist M3U / M3U8 étendue (#EXTINF avec tvg-logo, group-title…). */
@@ -13,7 +11,7 @@ class M3uProvider(private val url: String) : IptvProvider {
     private var entries: List<Content>? = null
 
     private suspend fun all(): List<Content> = mutex.withLock {
-        entries ?: withContext(Dispatchers.Default) { parse(Http.get(url)) }.also {
+        entries ?: Http.readLines(url) { parse(it) }.also {
             if (it.isEmpty()) throw IOException("La playlist est vide ou n'est pas au format M3U")
             entries = it
         }
@@ -36,12 +34,14 @@ class M3uProvider(private val url: String) : IptvProvider {
         private val ATTR = Regex("""([\w-]+)="([^"]*)"""")
         private const val NO_GROUP = "Sans catégorie"
 
-        fun parse(text: String): List<Content> {
+        fun parse(text: String): List<Content> = parse(text.lineSequence())
+
+        fun parse(lines: Sequence<String>): List<Content> {
             val out = ArrayList<Content>()
             var name: String? = null
             var logo: String? = null
             var group: String? = null
-            for (raw in text.lineSequence()) {
+            for (raw in lines) {
                 val line = raw.trim()
                 when {
                     line.startsWith("#EXTINF", ignoreCase = true) -> {

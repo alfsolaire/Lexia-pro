@@ -1,6 +1,7 @@
 package com.lexia.player.player
 
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,10 +16,12 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
 import com.lexia.player.billing.Licensing
 import com.lexia.player.data.Content
@@ -30,6 +33,7 @@ import com.lexia.player.ui.timeRange
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.io.File
 
 @OptIn(UnstableApi::class)
 class PlayerActivity : ComponentActivity() {
@@ -42,6 +46,10 @@ class PlayerActivity : ComponentActivity() {
     private var epgJob: Job? = null
     private var pausedAt = 0L
     private var lastLiveRetry = 0L
+    private var recorder: LiveRecorder? = null
+    private var inTimeshift = false
+    private var timeshiftDelayMs = 0L
+    private val startRecorder = Runnable { recorder?.start() }
     private val handler = Handler(Looper.getMainLooper())
     private val hideOverlay = Runnable { overlay.visibility = View.GONE }
     private val periodicSave = object : Runnable {
@@ -66,6 +74,7 @@ class PlayerActivity : ComponentActivity() {
         playerView = PlayerView(this).apply {
             setBackgroundColor(Color.BLACK)
             setShowBuffering(PlayerView.SHOW_BUFFERING_ALWAYS)
+            setKeepContentOnPlayerReset(true) // garde l'image figée pendant la pause du direct
             controllerShowTimeoutMs = 4000
             keepScreenOn = true
         }
@@ -102,7 +111,7 @@ class PlayerActivity : ComponentActivity() {
         val exo = buildExoPlayer(this, pauseBuffer = true)
         exo.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
-                // En direct, après une pause trop longue le serveur coupe souvent le flux : on revient au direct.
+                // En direct (ou en différé), une coupure renvoie au direct, une fois toutes les 20 s au plus.
                 val now = System.currentTimeMillis()
                 if (isLive && now - lastLiveRetry > 20_000) {
                     lastLiveRetry = now
@@ -114,24 +123,15 @@ class PlayerActivity : ComponentActivity() {
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                if (!isLive) return
-                if (!playWhenReady) {
-                    pausedAt = System.currentTimeMillis()
-                    showOverlay("⏸  En pause\nAppuyez sur ⏯ pour reprendre (en différé)", PAUSE_BUFFER_MS)
-                } else if (pausedAt > 0) {
-                    val pausedFor = System.currentTimeMillis() - pausedAt
-                    pausedAt = 0
-                    if (pausedFor > PAUSE_BUFFER_MS - 10_000) {
-                        // Au-delà de la mémoire tampon, impossible de reprendre en différé : retour au direct.
-                        play(PlayQueue.index)
-                        showOverlay("▶  Pause trop longue : retour au direct", 3500)
-                    } else {
-                        showOverlay("▶  Reprise en différé (${pausedFor / 1000} s de retard)\n▲/▼ pour revenir au direct", 4000)
-                    }
-                }
+                if (isLive) handleLivePause(playWhenReady)
             }
 
             override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED && inTimeshift) {
+                    play(PlayQueue.index)
+                    showOverlay("▶  Fin du différé : retour au direct", 3500)
+                    return
+                }
                 if (state != Player.STATE_ENDED || isLive) return
                 current?.url?.let { prefs.clearResume(it) }
                 current = null
@@ -148,6 +148,7 @@ class PlayerActivity : ComponentActivity() {
     }
 
     private fun releasePlayer() {
+        stopTimeshift()
         saveProgress()
         epgJob?.cancel()
         handler.removeCallbacks(periodicSave)
@@ -164,6 +165,7 @@ class PlayerActivity : ComponentActivity() {
         PlayQueue.index = i
         val item = items[i]
         val url = item.url ?: return
+        stopTimeshift()
         saveProgress()
         current = item
         pausedAt = 0
@@ -240,6 +242,11 @@ class PlayerActivity : ComponentActivity() {
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         // En direct, haut/bas (ou CH+/CH-) changent de chaîne quand les commandes sont masquées.
+        if (inTimeshift && event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
+            play(PlayQueue.index)
+            showOverlay("▶  Retour au direct", 2500)
+            return true
+        }
         if (isLive && event.action == KeyEvent.ACTION_DOWN && ::playerView.isInitialized && !playerView.isControllerFullyVisible) {
             when (event.keyCode) {
                 KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> {
@@ -255,7 +262,67 @@ class PlayerActivity : ComponentActivity() {
         return super.dispatchKeyEvent(event)
     }
 
+    /**
+     * Pause du direct. Pour un flux MPEG-TS, la chaîne est enregistrée sur l'appareil pendant la pause
+     * puis relue en différé. Pour un flux HLS, on s'appuie sur la mémoire tampon du lecteur.
+     */
+    private fun handleLivePause(playWhenReady: Boolean) {
+        val p = player ?: return
+        val url = current?.url ?: return
+        if (!playWhenReady) {
+            pausedAt = System.currentTimeMillis()
+            if (!inTimeshift && recorder == null && !url.contains(".m3u8", ignoreCase = true)) {
+                val maxBytes = minOf(MAX_TIMESHIFT_BYTES, cacheDir.usableSpace - 300L * 1024 * 1024)
+                if (maxBytes > 50L * 1024 * 1024) {
+                    // On libère la connexion du lecteur (beaucoup d'abonnements n'en autorisent qu'une)
+                    // puis on enregistre la suite du direct.
+                    p.stop()
+                    recorder = LiveRecorder(url, File(cacheDir, "timeshift.ts"), maxBytes)
+                    handler.postDelayed(startRecorder, 1_500)
+                }
+            }
+            showOverlay("⏸  En pause\nAppuyez sur ⏯ pour reprendre là où vous en étiez", 600_000)
+            return
+        }
+        if (pausedAt == 0L) return
+        val pausedFor = System.currentTimeMillis() - pausedAt
+        pausedAt = 0
+        val rec = recorder
+        when {
+            rec != null && !inTimeshift -> {
+                handler.removeCallbacks(startRecorder)
+                if (!rec.running && rec.bytesWritten.get() == 0L) {
+                    // L'enregistrement n'a pas démarré (pause très courte ou connexion refusée).
+                    play(PlayQueue.index)
+                    return
+                }
+                inTimeshift = true
+                timeshiftDelayMs = pausedFor
+                val source = ProgressiveMediaSource.Factory { GrowingFileDataSource(rec) }
+                    .createMediaSource(MediaItem.fromUri(Uri.fromFile(rec.file)))
+                p.setMediaSource(source)
+                p.prepare()
+                p.play()
+                showOverlay("▶  Différé : ${formatTime(timeshiftDelayMs)} de retard\n⏩ ou ▲/▼ pour revenir au direct", 5000)
+            }
+            inTimeshift -> {
+                timeshiftDelayMs += pausedFor
+                showOverlay("▶  Différé : ${formatTime(timeshiftDelayMs)} de retard\n⏩ ou ▲/▼ pour revenir au direct", 5000)
+            }
+            else -> showOverlay("▶  Reprise", 2000)
+        }
+    }
+
+    private fun stopTimeshift() {
+        handler.removeCallbacks(startRecorder)
+        recorder?.delete()
+        recorder = null
+        inTimeshift = false
+        timeshiftDelayMs = 0
+    }
+
     companion object {
+        private const val MAX_TIMESHIFT_BYTES = 2L * 1024 * 1024 * 1024
         private const val SAVE_INTERVAL_MS = 15_000L
         private const val MIN_RESUME_MS = 30_000L
     }

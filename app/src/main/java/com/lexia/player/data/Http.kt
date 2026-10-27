@@ -17,6 +17,16 @@ object Http {
         .followSslRedirects(true)
         .build()
 
+    /** Lit la réponse ligne par ligne, sans la charger entièrement en mémoire (grosses playlists). */
+    suspend fun <T> readLines(url: String, block: (Sequence<String>) -> T): T = withContext(Dispatchers.IO) {
+        val request = Request.Builder().url(url).header("User-Agent", USER_AGENT).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) throw IOException("Le serveur a répondu HTTP ${response.code}")
+            val body = response.body ?: throw IOException("Réponse vide")
+            body.charStream().buffered().useLines(block)
+        }
+    }
+
     suspend fun get(url: String): String = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).header("User-Agent", USER_AGENT).build()
         client.newCall(request).execute().use { response ->
