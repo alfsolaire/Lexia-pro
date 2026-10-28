@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -132,32 +133,32 @@ fun BrowseScreen(
     }
 
     val title = when (type) {
-        ContentType.LIVE -> "TV en direct"
-        ContentType.MOVIE -> "Films"
-        ContentType.SERIES -> "Séries"
+        ContentType.LIVE -> S.liveTv
+        ContentType.MOVIE -> S.movies
+        ContentType.SERIES -> S.series
     }
 
     val cats = categories
     when {
         error != null -> ErrorMessage(error.orEmpty()) { reloadKey++ }
-        cats == null -> Loading("Chargement : $title…")
+        cats == null -> Loading(S.loadingTitle(title))
         else -> {
             val counts = remember(items) { items.groupingBy { it.categoryId }.eachCount() }
             val byKey = remember(items) { items.associateBy { favoriteKey(it) } }
-            val recentLabel = if (type == ContentType.LIVE) "🕘 Dernières chaînes" else "🕘 Récemment vus"
+            val recentLabel = if (type == ContentType.LIVE) S.recentChannels else S.recentlyWatched
             val allCats = remember(cats, pinned, sortAlpha) {
                 val regular = cats.filter { it.id != ALL && it.id != FAV && it.id != RECENT }
                 val byId = regular.associateBy { it.id }
                 val top = pinned.mapNotNull { byId[it] }
                 val rest = regular.filter { it.id !in pinned }.let { list ->
                     if (sortAlpha) {
-                        val collator = Collator.getInstance(Locale.FRANCE)
+                        val collator = Collator.getInstance(Locale.getDefault())
                         list.sortedWith { a, b -> collator.compare(a.name, b.name) }
                     } else {
                         list
                     }
                 }
-                listOf(Category(ALL, "Tout"), Category(FAV, "★ Favoris"), Category(RECENT, recentLabel)) + top + rest
+                listOf(Category(ALL, S.all), Category(FAV, S.favorites), Category(RECENT, recentLabel)) + top + rest
             }
             val visible = remember(items, selected, query, favorites, recents) {
                 val q = query.trim()
@@ -211,7 +212,7 @@ fun BrowseScreen(
                 )
                 Column(Modifier.weight(1f).fillMaxHeight().padding(start = 24.dp, end = 24.dp, top = 20.dp)) {
                     Text(
-                        "${visible.size} élément(s)   ·   OK : ouvrir   ·   ☰ Menu : ajouter/retirer des favoris",
+                        S.itemsHint(visible.size),
                         color = TextDim,
                         fontSize = 14.sp,
                     )
@@ -220,9 +221,9 @@ fun BrowseScreen(
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text(
                                 when (selected) {
-                                    FAV -> "Aucun favori pour le moment."
-                                    RECENT -> "Rien de regardé récemment."
-                                    else -> "Aucun contenu."
+                                    FAV -> S.noFavorites
+                                    RECENT -> S.nothingRecent
+                                    else -> S.noContent
                                 },
                                 color = TextDim, fontSize = 18.sp,
                             )
@@ -271,7 +272,7 @@ private fun CategoryPanel(
         OutlinedTextField(
             value = query,
             onValueChange = onQuery,
-            label = { Text("Rechercher") },
+            label = { Text(S.search) },
             singleLine = true,
             colors = tvFieldColors(),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
@@ -281,12 +282,12 @@ private fun CategoryPanel(
         Spacer(Modifier.height(8.dp))
         FocusCard(onClick = onToggleSort, focusScale = 1.02f, modifier = Modifier.fillMaxWidth()) {
             Text(
-                "Tri : " + if (sortAlpha) "A → Z" else "ordre du serveur",
+                if (sortAlpha) S.sortAlpha else S.sortServer,
                 color = TextDim, fontSize = 14.sp,
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
             )
         }
-        Text("☰ sur une catégorie : l'épingler en haut", color = TextDim, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
+        Text(S.pinHint, color = TextDim, fontSize = 12.sp, modifier = Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(4.dp))
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -409,7 +410,7 @@ private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, hasGuide: Boolean,
         LivePreview(channel, Modifier.fillMaxWidth().aspectRatio(16f / 9f).clip(RoundedCornerShape(8.dp)))
         Spacer(Modifier.height(10.dp))
         if (channel == null) {
-            Text("Placez-vous sur une chaîne pour voir son aperçu et son programme.", color = TextDim, fontSize = 15.sp)
+            Text(S.previewHint, color = TextDim, fontSize = 15.sp)
             return@Column
         }
         Text(channel.name, color = TextMain, fontSize = 19.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -418,13 +419,13 @@ private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, hasGuide: Boolean,
         val current = epg?.firstOrNull { it.start <= now && it.end > now }
         val next = epg?.firstOrNull { it.start >= (current?.end ?: now) }
         when {
-            !hasGuide -> Text("Guide des programmes disponible avec les comptes Xtream Codes.", color = TextDim, fontSize = 14.sp)
-            epg == null -> Text("Chargement du programme…", color = TextDim, fontSize = 14.sp)
+            !hasGuide -> Text(S.guideXtreamOnly, color = TextDim, fontSize = 14.sp)
+            epg == null -> Text(S.loadingGuide, color = TextDim, fontSize = 14.sp)
             current == null && next == null ->
-                Text("Le fournisseur ne propose pas de programme pour cette chaîne.", color = TextDim, fontSize = 14.sp)
+                Text(S.noGuide, color = TextDim, fontSize = 14.sp)
             else -> {
                 current?.let {
-                    Text("EN COURS  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("${S.now}  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Text(it.title, color = TextMain, fontSize = 17.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     Spacer(Modifier.height(4.dp))
                     val fraction = ((now - it.start).toFloat() / (it.end - it.start).coerceAtLeast(1)).coerceIn(0f, 1f)
@@ -441,7 +442,7 @@ private fun EpgPanel(channel: Content?, epg: List<EpgEntry>?, hasGuide: Boolean,
                     Spacer(Modifier.height(12.dp))
                 }
                 next?.let {
-                    Text("ENSUITE  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("${S.next}  ·  ${timeRange(it)}", color = Accent, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     Text(it.title, color = TextMain, fontSize = 16.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
@@ -497,12 +498,12 @@ private fun LivePreview(channel: Content?, modifier: Modifier) {
             modifier = Modifier.fillMaxSize(),
         )
         if (channel == null) {
-            Text("Aperçu", color = TextDim, fontSize = 14.sp)
+            Text(S.preview, color = TextDim, fontSize = 14.sp)
         }
     }
 }
 
 fun timeRange(entry: EpgEntry): String {
-    val format = SimpleDateFormat("HH:mm", Locale.FRANCE)
+    val format = SimpleDateFormat("HH:mm", Locale.getDefault())
     return "${format.format(Date(entry.start))} – ${format.format(Date(entry.end))}"
 }

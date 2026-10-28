@@ -1,5 +1,6 @@
 package com.lexia.player.data
 
+import com.lexia.player.i18n.S
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.io.IOException
@@ -12,14 +13,14 @@ class M3uProvider(private val url: String) : IptvProvider {
 
     private suspend fun all(): List<Content> = mutex.withLock {
         entries ?: Http.readLines(url) { parse(it) }.also {
-            if (it.isEmpty()) throw IOException("La playlist est vide ou n'est pas au format M3U")
+            if (it.isEmpty()) throw IOException(S.errEmptyPlaylist)
             entries = it
         }
     }
 
     override suspend fun accountInfo(): AccountInfo {
         val list = all()
-        return AccountInfo("Playlist M3U", "${list.size} entrées", null, null, null)
+        return AccountInfo(S.m3uPlaylist, S.m3uEntries(list.size), null, null, null)
     }
 
     override suspend fun categories(type: ContentType): List<Category> =
@@ -32,7 +33,6 @@ class M3uProvider(private val url: String) : IptvProvider {
 
     companion object {
         private val ATTR = Regex("""([\w-]+)="([^"]*)"""")
-        private const val NO_GROUP = "Sans catégorie"
 
         fun parse(text: String): List<Content> = parse(text.lineSequence())
 
@@ -49,7 +49,7 @@ class M3uProvider(private val url: String) : IptvProvider {
                         val lastQuote = line.lastIndexOf('"')
                         val comma = line.indexOf(',', if (lastQuote >= 0) lastQuote else 0)
                         name = (if (comma >= 0) line.substring(comma + 1).trim() else "")
-                            .ifEmpty { attrs["tvg-name"] ?: "Sans nom" }
+                            .ifEmpty { attrs["tvg-name"] ?: S.noName }
                         logo = attrs["tvg-logo"]?.takeIf { it.isNotBlank() }
                         group = attrs["group-title"]?.takeIf { it.isNotBlank() }
                     }
@@ -62,7 +62,7 @@ class M3uProvider(private val url: String) : IptvProvider {
                             line.contains("/series/") -> ContentType.SERIES
                             else -> ContentType.LIVE
                         }
-                        out += Content(line, name ?: line.substringAfterLast('/'), logo, group ?: NO_GROUP, type, line)
+                        out += Content(line, name ?: line.substringAfterLast('/'), logo, group ?: S.noCategory, type, line)
                         name = null; logo = null; group = null
                     }
                 }

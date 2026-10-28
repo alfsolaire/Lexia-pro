@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,32 +36,32 @@ fun PaywallScreen() {
         Text(APP_TITLE, color = TextMain, fontSize = 44.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
         Text(
-            "Votre essai gratuit de ${Licensing.TRIAL_DAYS} jours est terminé.",
+            S.trialEnded(Licensing.TRIAL_DAYS),
             color = TextMain, fontSize = 22.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            "Choisissez votre formule pour continuer. Vos comptes, favoris et réglages sont conservés.",
+            S.chooseOffer,
             color = TextDim, fontSize = 17.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(28.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
             OfferCard(
-                title = "Annuel",
-                price = "${Licensing.priceYearly} / an",
-                detail = "Renouvelé chaque année,\nrésiliable à tout moment",
+                title = S.yearly,
+                price = S.perYear(Licensing.priceYearly),
+                detail = S.yearlyDetail,
                 onClick = { Licensing.buyYearly() },
                 modifier = Modifier.focusRequester(buyFocus),
             )
             OfferCard(
-                title = "À vie  ★ meilleure offre",
+                title = S.lifetimeBest,
                 price = Licensing.priceLifetime,
-                detail = "Un seul paiement,\nsans abonnement",
+                detail = S.lifetimeDetail,
                 onClick = { Licensing.buyLifetime() },
             )
         }
         Spacer(Modifier.height(18.dp))
-        TvButton("Restaurer mes achats", { Licensing.restore() })
+        TvButton(S.restorePurchases, { Licensing.restore() })
         Licensing.message?.let {
             Spacer(Modifier.height(18.dp))
             Text(it, color = Accent, fontSize = 16.sp, textAlign = TextAlign.Center)

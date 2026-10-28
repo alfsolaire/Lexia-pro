@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -119,7 +120,7 @@ fun TvButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, s
 }
 
 @Composable
-fun Loading(message: String = "Chargement…") {
+fun Loading(message: String = S.loading) {
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -139,12 +140,12 @@ fun ErrorMessage(message: String, onRetry: (() -> Unit)? = null) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Text("Une erreur est survenue", color = TextMain, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(S.errorTitle, color = TextMain, fontSize = 26.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp))
         Text(message, color = Danger, fontSize = 18.sp, textAlign = TextAlign.Center)
         if (onRetry != null) {
             Spacer(Modifier.height(24.dp))
-            TvButton("Réessayer", onRetry, Modifier.focusRequester(focus))
+            TvButton(S.retry, onRetry, Modifier.focusRequester(focus))
             LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
         }
     }
@@ -162,10 +163,10 @@ fun tvFieldColors() = OutlinedTextFieldDefaults.colors(
 )
 
 fun errorText(e: Throwable): String = when (e) {
-    is UnknownHostException -> "Serveur introuvable. Vérifiez l'adresse et la connexion Internet."
-    is SocketTimeoutException -> "Le serveur met trop de temps à répondre."
-    is JSONException -> "Réponse inattendue du serveur."
-    is IllegalArgumentException -> "Adresse invalide."
+    is UnknownHostException -> S.errUnknownHost
+    is SocketTimeoutException -> S.errTimeout
+    is JSONException -> S.errBadResponse
+    is IllegalArgumentException -> S.errInvalidAddress
     else -> e.message ?: e.javaClass.simpleName
 }
 

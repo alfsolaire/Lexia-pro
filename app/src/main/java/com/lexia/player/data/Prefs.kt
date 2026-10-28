@@ -1,5 +1,6 @@
 package com.lexia.player.data
 
+import com.lexia.player.i18n.S
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
@@ -12,7 +13,7 @@ data class LoginConfig(
     val m3uUrl: String,
 ) {
     fun defaultName(): String =
-        if (mode == MODE_M3U) "Playlist M3U"
+        if (mode == MODE_M3U) S.m3uPlaylist
         else "$username @ ${server.removePrefix("http://").removePrefix("https://").substringBefore('/')}"
 
     fun sameSource(other: LoginConfig): Boolean =

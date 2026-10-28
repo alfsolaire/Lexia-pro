@@ -1,5 +1,6 @@
 package com.lexia.player.data
 
+import com.lexia.player.i18n.S
 import android.net.Uri
 import android.util.Base64
 import kotlinx.coroutines.sync.Mutex
@@ -34,9 +35,9 @@ class XtreamProvider(
 
     override suspend fun accountInfo(): AccountInfo {
         val json = JSONTokener(Http.get(api())).nextValue() as? JSONObject
-            ?: throw IOException("Réponse invalide : vérifiez l'adresse du serveur")
-        val info = json.optJSONObject("user_info") ?: throw IOException("Réponse invalide : vérifiez l'adresse du serveur")
-        if (info.optInt("auth", 1) == 0) throw IOException("Identifiants refusés par le serveur")
+            ?: throw IOException(S.errInvalidServer)
+        val info = json.optJSONObject("user_info") ?: throw IOException(S.errInvalidServer)
+        if (info.optInt("auth", 1) == 0) throw IOException(S.errBadCredentials)
         return AccountInfo(
             username = info.optString("username", username),
             status = info.str("status"),
@@ -53,7 +54,7 @@ class XtreamProvider(
             ContentType.SERIES -> "get_series_categories"
         }
         return parseArray(Http.get(api(action))).objects().map {
-            Category(it.optString("category_id"), it.optString("category_name", "Sans nom"))
+            Category(it.optString("category_id"), it.optString("category_name", S.noName))
         }.distinctBy { it.id }
     }
 
@@ -94,7 +95,7 @@ class XtreamProvider(
                     val epInfo = ep.optJSONObject("info")
                     Episode(
                         id = id,
-                        title = ep.str("title") ?: "Épisode",
+                        title = ep.str("title") ?: S.episodeDefault,
                         season = season,
                         number = ep.optInt("episode_num", 0),
                         url = "$base/series/$user/$pass/$id.$ext",
@@ -135,7 +136,7 @@ class XtreamProvider(
             val end = e.str("stop_timestamp")?.toLongOrNull()?.times(1000)
                 ?: parseEpgDate(e.str("stop") ?: e.str("end"))
                 ?: return@mapNotNull null
-            EpgEntry(decodeBase64(e.str("title")) ?: "Sans titre", decodeBase64(e.str("description")), start, end)
+            EpgEntry(decodeBase64(e.str("title")) ?: S.untitled, decodeBase64(e.str("description")), start, end)
         }.distinctBy { it.start }.sortedBy { it.start }
     }
 

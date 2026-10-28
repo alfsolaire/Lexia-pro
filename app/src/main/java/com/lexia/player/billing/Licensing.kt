@@ -1,5 +1,6 @@
 package com.lexia.player.billing
 
+import com.lexia.player.i18n.S
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,7 +10,6 @@ import androidx.compose.runtime.setValue
 object Licensing {
     const val TRIAL_DAYS = 7
     private const val DAY_MS = 24 * 60 * 60 * 1000L
-    private const val CHECKING = "Vérification de vos achats…"
 
     var lifetime by mutableStateOf(false)
         private set
@@ -49,9 +49,9 @@ object Licensing {
                 lifetime = hasLifetime
                 yearly = hasYearly
                 sp.edit().putBoolean("lifetime", hasLifetime).putBoolean("yearly", hasYearly).apply()
-                if (message == CHECKING) {
-                    message = if (hasLifetime || hasYearly) "Achat retrouvé : l'application est débloquée."
-                    else "Aucun achat trouvé pour ce compte Amazon."
+                if (message == S.checkingPurchases) {
+                    message = if (hasLifetime || hasYearly) S.purchaseRestored
+                    else S.noPurchaseFound
                 }
             },
             onPrice = { sku, price ->
@@ -84,7 +84,7 @@ object Licensing {
     }
 
     fun restore() {
-        message = CHECKING
+        message = S.checkingPurchases
         BillingBackend.restore()
     }
 }

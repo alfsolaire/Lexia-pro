@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -81,7 +82,7 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
         val missing = if (mode == LoginConfig.MODE_M3U) config.m3uUrl.isBlank()
         else config.server.isBlank() || config.username.isBlank() || config.password.isBlank()
         if (missing) {
-            error = "Veuillez remplir tous les champs."
+            error = S.fillAllFields
             return
         }
         loading = true
@@ -122,7 +123,7 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(APP_TITLE, color = TextMain, fontSize = 40.sp, fontWeight = FontWeight.Bold)
-            Text(APP_SUBTITLE, color = Accent, fontSize = 18.sp)
+            Text(S.appSubtitle, color = Accent, fontSize = 18.sp)
             Spacer(Modifier.height(18.dp))
             val url = qrUrl
             if (url != null) {
@@ -130,28 +131,28 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         bitmap = qr,
-                        contentDescription = "QR code de connexion",
+                        contentDescription = S.qrDescription,
                         modifier = Modifier.size(170.dp).background(Color.White, RoundedCornerShape(8.dp)).padding(6.dp),
                     )
                     Spacer(Modifier.width(18.dp))
                     Column {
-                        Text("📱 Connexion rapide", color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(S.quickLogin, color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "Scannez ce QR code avec votre téléphone (connecté au même Wi-Fi) et saisissez votre abonnement sur le téléphone.",
+                            S.qrInstructions,
                             color = TextDim, fontSize = 14.sp,
                         )
                     }
                 }
             } else if (qrReady) {
                 Text(
-                    "Connexion par QR code indisponible : la Fire TV n'est pas reliée à un réseau local.",
+                    S.qrUnavailable,
                     color = TextDim, fontSize = 14.sp,
                 )
             }
             Spacer(Modifier.height(18.dp))
             Text(
-                "Cette application est uniquement un lecteur : elle ne fournit aucune chaîne ni aucun contenu.",
+                S.playerOnly,
                 color = TextDim,
                 fontSize = 13.sp,
             )
@@ -165,26 +166,26 @@ fun LoginScreen(prefs: Prefs, blank: Boolean, onLoggedIn: () -> Unit) {
                     "Xtream Codes", { mode = LoginConfig.MODE_XTREAM },
                     Modifier.focusRequester(firstFocus), selected = mode == LoginConfig.MODE_XTREAM,
                 )
-                TvButton("Lien M3U", { mode = LoginConfig.MODE_M3U }, selected = mode == LoginConfig.MODE_M3U)
+                TvButton(S.m3uLink, { mode = LoginConfig.MODE_M3U }, selected = mode == LoginConfig.MODE_M3U)
             }
             Spacer(Modifier.height(12.dp))
-            Field("Nom du compte (facultatif, ex. Salon)", name, { name = it })
+            Field(S.fieldAccountName, name, { name = it })
             if (mode == LoginConfig.MODE_XTREAM) {
-                Field("Adresse du serveur (ex. http://exemple.com:8080)", server, { server = it }, KeyboardType.Uri)
-                Field("Nom d'utilisateur", username, { username = it })
-                Field("Mot de passe", password, { password = it }, isPassword = true)
+                Field(S.fieldServer, server, { server = it }, KeyboardType.Uri)
+                Field(S.fieldUsername, username, { username = it })
+                Field(S.fieldPassword, password, { password = it }, isPassword = true)
             } else {
-                Field("URL de la playlist M3U", m3uUrl, { m3uUrl = it }, KeyboardType.Uri)
+                Field(S.fieldM3uUrl, m3uUrl, { m3uUrl = it }, KeyboardType.Uri)
             }
             Spacer(Modifier.height(16.dp))
             if (loading) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(Modifier.size(28.dp), color = Accent)
                     Spacer(Modifier.width(14.dp))
-                    Text("Connexion en cours…", color = TextDim, fontSize = 18.sp)
+                    Text(S.connecting, color = TextDim, fontSize = 18.sp)
                 }
             } else {
-                TvButton("Se connecter", { connect() })
+                TvButton(S.connect, { connect() })
             }
             error?.let {
                 Spacer(Modifier.height(12.dp))

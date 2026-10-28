@@ -1,5 +1,6 @@
 package com.lexia.player.billing
 
+import com.lexia.player.i18n.S
 import android.content.Context
 import com.amazon.device.iap.PurchasingListener
 import com.amazon.device.iap.PurchasingService
@@ -42,7 +43,7 @@ object BillingBackend : PurchasingListener {
             PurchasingService.getProductData(setOf(SKU_LIFETIME, SKU_YEARLY))
             restore()
         } catch (e: Exception) {
-            onMessage("Les achats Amazon sont indisponibles sur cet appareil.")
+            onMessage(S.iapUnavailable)
         }
     }
 
@@ -50,7 +51,7 @@ object BillingBackend : PurchasingListener {
         try {
             PurchasingService.purchase(sku)
         } catch (e: Exception) {
-            onMessage("Impossible d'ouvrir l'achat Amazon.")
+            onMessage(S.purchaseOpenFailed)
         }
     }
 
@@ -60,7 +61,7 @@ object BillingBackend : PurchasingListener {
         try {
             PurchasingService.getPurchaseUpdates(true)
         } catch (e: Exception) {
-            onMessage("Impossible de vérifier vos achats.")
+            onMessage(S.purchaseCheckFailed)
         }
     }
 
@@ -87,14 +88,14 @@ object BillingBackend : PurchasingListener {
                     if (isYearly(receipt)) foundYearly = true
                     onEntitlement(foundLifetime || isLifetime(receipt), foundYearly || isYearly(receipt))
                 }
-                onMessage("Merci ! L'application est débloquée.")
+                onMessage(S.thanksUnlocked)
             }
             PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> {
-                onMessage("Achat déjà effectué : vérification…")
+                onMessage(S.alreadyPurchased)
                 restore()
             }
-            PurchaseResponse.RequestStatus.PENDING -> onMessage("Achat en attente de validation par Amazon.")
-            else -> onMessage("L'achat n'a pas abouti.")
+            PurchaseResponse.RequestStatus.PENDING -> onMessage(S.purchasePending)
+            else -> onMessage(S.purchaseFailed)
         }
     }
 

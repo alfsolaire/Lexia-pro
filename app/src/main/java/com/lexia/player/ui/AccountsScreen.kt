@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,9 +44,9 @@ fun AccountsScreen(
     val firstFocus = remember { FocusRequester() }
 
     Column(Modifier.fillMaxSize().background(Bg).padding(horizontal = 56.dp, vertical = 36.dp)) {
-        Text("Comptes", color = TextMain, fontSize = 34.sp, fontWeight = FontWeight.Bold)
+        Text(S.accounts, color = TextMain, fontSize = 34.sp, fontWeight = FontWeight.Bold)
         Text(
-            "Choisissez l'abonnement à utiliser. Les favoris et l'historique sont propres à chaque compte.",
+            S.accountsIntro,
             color = TextDim, fontSize = 16.sp,
         )
         Spacer(Modifier.height(24.dp))
@@ -70,18 +71,18 @@ fun AccountsScreen(
                     ) {
                         Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
                             Text(
-                                account.name + if (account.id == currentId) "   ✓ actuel" else "",
+                                account.name + if (account.id == currentId) "   ${S.currentAccount}" else "",
                                 color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
                             )
                             Text(
-                                if (account.config.mode == LoginConfig.MODE_M3U) "Playlist M3U"
+                                if (account.config.mode == LoginConfig.MODE_M3U) S.m3uPlaylist
                                 else "Xtream Codes · ${account.config.server}",
                                 color = TextDim, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             )
                         }
                     }
                     val confirming = pendingDelete == account.id
-                    TvButton(if (confirming) "Confirmer la suppression" else "Supprimer", {
+                    TvButton(if (confirming) S.confirmDelete else S.delete, {
                         if (!confirming) {
                             pendingDelete = account.id
                         } else {
@@ -100,7 +101,7 @@ fun AccountsScreen(
         }
         Spacer(Modifier.height(16.dp))
         TvButton(
-            "+ Ajouter un compte", onAdd,
+            S.addAccount, onAdd,
             if (accounts.isEmpty()) Modifier.focusRequester(firstFocus) else Modifier,
         )
     }

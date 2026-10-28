@@ -1,5 +1,6 @@
 package com.lexia.player.player
 
+import com.lexia.player.i18n.S
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -115,11 +116,11 @@ class PlayerActivity : ComponentActivity() {
                 val now = System.currentTimeMillis()
                 if (isLive && now - lastLiveRetry > 20_000) {
                     lastLiveRetry = now
-                    showOverlay("Reconnexion au direct…", 3000)
+                    showOverlay(S.reconnecting, 3000)
                     play(PlayQueue.index)
                     return
                 }
-                showOverlay("Lecture impossible (${error.errorCodeName}). Essayez une autre chaîne ou changez le format du direct.", 8000)
+                showOverlay(S.playbackError(error.errorCodeName), 8000)
             }
 
             override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
@@ -129,7 +130,7 @@ class PlayerActivity : ComponentActivity() {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED && inTimeshift) {
                     play(PlayQueue.index)
-                    showOverlay("▶  Fin du différé : retour au direct", 3500)
+                    showOverlay(S.timeshiftEnded, 3500)
                     return
                 }
                 if (state != Player.STATE_ENDED || isLive) return
@@ -198,13 +199,13 @@ class PlayerActivity : ComponentActivity() {
                 if (nowShowing == null && next == null) return@launch
                 val text = buildString {
                     append(title)
-                    nowShowing?.let { append("\nEn cours : ${it.title}  (${timeRange(it)})") }
-                    next?.let { append("\nEnsuite : ${it.title}  (${timeRange(it)})") }
+                    nowShowing?.let { append("\n" + S.nowOverlay(it.title, timeRange(it))) }
+                    next?.let { append("\n" + S.nextOverlay(it.title, timeRange(it))) }
                 }
                 showOverlay(text, 6000)
             }
         } else if (resumeAt != null) {
-            showOverlay("${item.name}\nReprise à ${formatTime(resumeAt)}", 4000)
+            showOverlay("${item.name}\n" + S.resumeAt(formatTime(resumeAt)), 4000)
         } else {
             showOverlay(item.name, 3500)
         }
@@ -244,7 +245,7 @@ class PlayerActivity : ComponentActivity() {
         // En direct, haut/bas (ou CH+/CH-) changent de chaîne quand les commandes sont masquées.
         if (inTimeshift && event.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_MEDIA_FAST_FORWARD) {
             play(PlayQueue.index)
-            showOverlay("▶  Retour au direct", 2500)
+            showOverlay(S.backToLive, 2500)
             return true
         }
         // Films et séries : ◀ / ⏪ recule de 10 s, ▶ / ⏩ avance de 10 s (commandes masquées).
@@ -299,7 +300,7 @@ class PlayerActivity : ComponentActivity() {
                     handler.postDelayed(startRecorder, 1_500)
                 }
             }
-            showOverlay("⏸  En pause\nAppuyez sur ⏯ pour reprendre là où vous en étiez", 600_000)
+            showOverlay(S.paused, 600_000)
             return
         }
         if (pausedAt == 0L) return
@@ -321,13 +322,13 @@ class PlayerActivity : ComponentActivity() {
                 p.setMediaSource(source)
                 p.prepare()
                 p.play()
-                showOverlay("▶  Différé : ${formatTime(timeshiftDelayMs)} de retard\n⏩ ou ▲/▼ pour revenir au direct", 5000)
+                showOverlay(S.timeshiftDelay(formatTime(timeshiftDelayMs)), 5000)
             }
             inTimeshift -> {
                 timeshiftDelayMs += pausedFor
-                showOverlay("▶  Différé : ${formatTime(timeshiftDelayMs)} de retard\n⏩ ou ▲/▼ pour revenir au direct", 5000)
+                showOverlay(S.timeshiftDelay(formatTime(timeshiftDelayMs)), 5000)
             }
-            else -> showOverlay("▶  Reprise", 2000)
+            else -> showOverlay(S.resumed, 2000)
         }
     }
 

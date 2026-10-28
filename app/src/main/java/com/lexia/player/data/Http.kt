@@ -1,5 +1,6 @@
 package com.lexia.player.data
 
+import com.lexia.player.i18n.S
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -21,8 +22,8 @@ object Http {
     suspend fun <T> readLines(url: String, block: (Sequence<String>) -> T): T = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).header("User-Agent", USER_AGENT).build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("Le serveur a répondu HTTP ${response.code}")
-            val body = response.body ?: throw IOException("Réponse vide")
+            if (!response.isSuccessful) throw IOException(S.errHttp(response.code))
+            val body = response.body ?: throw IOException(S.errEmptyResponse)
             body.charStream().buffered().useLines(block)
         }
     }
@@ -30,7 +31,7 @@ object Http {
     suspend fun get(url: String): String = withContext(Dispatchers.IO) {
         val request = Request.Builder().url(url).header("User-Agent", USER_AGENT).build()
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("Le serveur a répondu HTTP ${response.code}")
+            if (!response.isSuccessful) throw IOException(S.errHttp(response.code))
             response.body?.string().orEmpty()
         }
     }

@@ -21,6 +21,7 @@ Application Android TV / Fire TV (Kotlin, Jetpack Compose, Media3 ExoPlayer) dan
 - **Connexion par QR code** : l'écran de connexion affiche un QR code ; le téléphone (même Wi-Fi) ouvre une page servie par la Fire TV et y envoie l'abonnement.
 - **Films et séries** : ◀ / ⏪ recule de 10 s, ▶ / ⏩ avance de 10 s.
 - **Pause du direct** (touche ⏯) : la chaîne est enregistrée sur l'appareil pendant la pause (jusqu'à 2 Go) puis relue en différé ; ⏩ ou ▲/▼ pour revenir au direct.
+- **7 langues** : français, anglais, espagnol, italien, allemand, portugais et arabe (affichage de droite à gauche), selon la langue de la Fire TV. Textes centralisés dans `app/src/main/java/com/lexia/player/i18n/`.
 - Infos du compte : date d'expiration, nombre de connexions.
 - Format du direct au choix (MPEG-TS ou HLS) si un serveur pose problème.
 - Interface entièrement pilotable à la télécommande.

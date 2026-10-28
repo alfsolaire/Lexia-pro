@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,7 @@ import com.lexia.player.data.ContentType
 import com.lexia.player.data.LoginConfig
 import com.lexia.player.data.Prefs
 import com.lexia.player.data.Session
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
@@ -58,7 +59,7 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Un
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text(APP_TITLE, color = TextMain, fontSize = 34.sp, fontWeight = FontWeight.Bold)
-                accountName?.let { Text("Compte : $it", color = Accent, fontSize = 16.sp) }
+                accountName?.let { Text(S.accountLabel(it), color = Accent, fontSize = 16.sp) }
             }
             Spacer(Modifier.weight(1f))
             account?.let { Text(accountLine(it), color = TextDim, fontSize = 16.sp) }
@@ -68,13 +69,13 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Un
             Row(verticalAlignment = Alignment.CenterVertically) {
                 val days = Licensing.daysLeft()
                 Text(
-                    "Essai gratuit : $days jour${if (days > 1) "s" else ""} restant${if (days > 1) "s" else ""}",
+                    S.trialDaysLeft(days),
                     color = TextMain, fontSize = 18.sp,
                 )
                 Spacer(Modifier.width(20.dp))
-                TvButton("Annuel (${Licensing.priceYearly}/an)", { Licensing.buyYearly() })
+                TvButton(S.yearlyButton(Licensing.priceYearly), { Licensing.buyYearly() })
                 Spacer(Modifier.width(12.dp))
-                TvButton("À vie (${Licensing.priceLifetime})", { Licensing.buyLifetime() })
+                TvButton(S.lifetimeButton(Licensing.priceLifetime), { Licensing.buyLifetime() })
             }
             Licensing.message?.let { Text(it, color = TextDim, fontSize = 14.sp) }
             Spacer(Modifier.height(24.dp))
@@ -82,22 +83,22 @@ fun HomeScreen(prefs: Prefs, onOpen: (ContentType) -> Unit, onAccounts: () -> Un
             Spacer(Modifier.height(48.dp))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(28.dp), modifier = Modifier.fillMaxWidth()) {
-            HomeTile("TV en direct", "📺", Modifier.weight(1f).focusRequester(firstFocus)) { onOpen(ContentType.LIVE) }
-            HomeTile("Films", "🎬", Modifier.weight(1f)) { onOpen(ContentType.MOVIE) }
-            HomeTile("Séries", "🎞", Modifier.weight(1f)) { onOpen(ContentType.SERIES) }
+            HomeTile(S.liveTv, "📺", Modifier.weight(1f).focusRequester(firstFocus)) { onOpen(ContentType.LIVE) }
+            HomeTile(S.movies, "🎬", Modifier.weight(1f)) { onOpen(ContentType.MOVIE) }
+            HomeTile(S.series, "🎞", Modifier.weight(1f)) { onOpen(ContentType.SERIES) }
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             if (config?.mode == LoginConfig.MODE_XTREAM) {
                 val label = if (liveFormat == "m3u8") "HLS (m3u8)" else "MPEG-TS"
-                TvButton("Format du direct : $label", {
+                TvButton(S.liveFormat(label), {
                     liveFormat = if (liveFormat == "ts") "m3u8" else "ts"
                     prefs.liveFormat = liveFormat
                     rebuild()
                 })
             }
-            TvButton("Actualiser les listes", { rebuild() })
-            TvButton("Comptes", onAccounts)
+            TvButton(S.refreshLists, { rebuild() })
+            TvButton(S.accounts, onAccounts)
         }
     }
 
@@ -122,6 +123,6 @@ private fun HomeTile(title: String, emoji: String, modifier: Modifier, onClick: 
 private fun accountLine(a: AccountInfo): String = buildList {
     add(a.username)
     a.status?.let { add(it) }
-    a.expiry?.let { add("Expire le " + SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE).format(Date(it * 1000))) }
-    if (a.maxConnections != null) add("Connexions ${a.activeConnections ?: "0"}/${a.maxConnections}")
+    a.expiry?.let { add(S.expiresOn(DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault()).format(Date(it * 1000)))) }
+    if (a.maxConnections != null) add(S.connections(a.activeConnections ?: "0", a.maxConnections))
 }.joinToString("  ·  ")

@@ -1,5 +1,6 @@
 package com.lexia.player.data
 
+import com.lexia.player.i18n.S
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -86,7 +87,7 @@ class PhoneLoginServer(private val onReceived: (name: String, config: LoginConfi
                 }
                 val form = parseForm(String(body, 0, read, Charsets.UTF_8))
                 if (form["t"] != token) {
-                    send(out, 403, page("Lien expiré", "Rescannez le QR code affiché sur la TV."))
+                    send(out, 403, page(S.phoneExpired, S.phoneRescan))
                     return
                 }
                 val config = LoginConfig(
@@ -99,13 +100,13 @@ class PhoneLoginServer(private val onReceived: (name: String, config: LoginConfi
                 val complete = if (config.mode == LoginConfig.MODE_M3U) config.m3uUrl.isNotBlank()
                 else config.server.isNotBlank() && config.username.isNotBlank() && config.password.isNotBlank()
                 if (!complete) {
-                    send(out, 400, page("Champs manquants", "Revenez en arrière et remplissez tous les champs."))
+                    send(out, 400, page(S.phoneMissing, S.phoneMissingDetail))
                     return
                 }
                 onReceived(form["name"].orEmpty().trim(), config)
-                send(out, 200, page("✅ Envoyé !", "Regardez votre TV : Alf TV Pro se connecte à votre abonnement."))
+                send(out, 200, page(S.phoneSent, S.phoneSentDetail))
             }
-            else -> send(out, 404, page("Lien invalide", "Rescannez le QR code affiché sur la TV."))
+            else -> send(out, 404, page(S.phoneInvalid, S.phoneRescan))
         }
     }
 
@@ -126,35 +127,39 @@ class PhoneLoginServer(private val onReceived: (name: String, config: LoginConfi
             key to value
         }
 
+    private val dir: String get() = if (S.htmlLang == "ar") "rtl" else "ltr"
+
+    private fun html(text: String) = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
+
     private fun page(title: String, message: String) = """
-        <!doctype html><html lang="fr"><head><meta charset="utf-8">
+        <!doctype html><html lang="${S.htmlLang}" dir="$dir"><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Alf TV Pro</title><style>$CSS</style></head><body><main>
         <h1>$title</h1><p>$message</p></main></body></html>
     """.trimIndent()
 
     private fun formPage() = """
-        <!doctype html><html lang="fr"><head><meta charset="utf-8">
+        <!doctype html><html lang="${S.htmlLang}" dir="$dir"><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>Alf TV Pro – Connexion</title><style>$CSS</style></head><body><main>
+        <title>Alf TV Pro</title><style>$CSS</style></head><body><main>
         <h1>Alf TV Pro</h1>
-        <p>Saisissez votre abonnement : il sera envoyé directement à votre TV, sans passer par Internet.</p>
+        <p>${html(S.phoneIntro)}</p>
         <form method="post" action="/send">
           <input type="hidden" name="t" value="$token">
           <div class="tabs">
             <label><input type="radio" name="mode" value="xtream" checked onchange="sw()"> Xtream Codes</label>
-            <label><input type="radio" name="mode" value="m3u" onchange="sw()"> Lien M3U</label>
+            <label><input type="radio" name="mode" value="m3u" onchange="sw()"> ${html(S.m3uLink)}</label>
           </div>
-          <label>Nom du compte (facultatif)<input name="name" placeholder="Salon"></label>
+          <label>${html(S.fieldAccountName)}<input name="name" placeholder="${html(S.phoneNamePlaceholder)}"></label>
           <div id="xtream">
-            <label>Adresse du serveur<input name="server" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="http://exemple.com:8080"></label>
-            <label>Nom d'utilisateur<input name="username" autocapitalize="off" autocorrect="off"></label>
-            <label>Mot de passe<input name="password" type="password"></label>
+            <label>${html(S.fieldServer)}<input name="server" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="http://exemple.com:8080"></label>
+            <label>${html(S.fieldUsername)}<input name="username" autocapitalize="off" autocorrect="off"></label>
+            <label>${html(S.fieldPassword)}<input name="password" type="password"></label>
           </div>
           <div id="m3u" hidden>
-            <label>URL de la playlist M3U<input name="m3u" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="http://…/get.php?username=…"></label>
+            <label>${html(S.fieldM3uUrl)}<input name="m3u" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="http://…/get.php?username=…"></label>
           </div>
-          <button type="submit">Envoyer à la TV</button>
+          <button type="submit">${html(S.phoneSend)}</button>
         </form>
         <script>
           function sw(){var m=document.querySelector('input[name=mode]:checked').value;

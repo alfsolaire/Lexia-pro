@@ -1,5 +1,6 @@
 package com.lexia.player.ui
 
+import com.lexia.player.i18n.S
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -69,7 +70,7 @@ fun SeriesScreen(series: Content, prefs: Prefs, onPlay: (List<Content>, Int) -> 
     val d = details
     when {
         error != null -> ErrorMessage(error.orEmpty()) { reloadKey++ }
-        d == null -> Loading("Chargement de la série…")
+        d == null -> Loading(S.loadingSeries)
         else -> Row(Modifier.fillMaxSize().background(Bg)) {
             val firstFocus = remember { FocusRequester() }
             val seasons = d.seasons.keys.sorted()
@@ -97,7 +98,7 @@ fun SeriesScreen(series: Content, prefs: Prefs, onPlay: (List<Content>, Int) -> 
                                 .then(if (index == 0) Modifier.focusRequester(firstFocus) else Modifier),
                         ) {
                             Text(
-                                "Saison $s  (${d.seasons[s]?.size ?: 0})", color = TextMain, fontSize = 17.sp,
+                                S.season(s, d.seasons[s]?.size ?: 0), color = TextMain, fontSize = 17.sp,
                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                             )
                         }
@@ -107,7 +108,7 @@ fun SeriesScreen(series: Content, prefs: Prefs, onPlay: (List<Content>, Int) -> 
             val episodes = d.seasons[season].orEmpty()
             if (episodes.isEmpty()) {
                 Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                    Text("Aucun épisode disponible.", color = TextDim, fontSize = 18.sp)
+                    Text(S.noEpisodes, color = TextDim, fontSize = 18.sp)
                 }
             } else {
                 LazyColumn(
@@ -134,7 +135,7 @@ fun SeriesScreen(series: Content, prefs: Prefs, onPlay: (List<Content>, Int) -> 
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(
-                                        "Épisode ${ep.number} · ${ep.title}", color = TextMain, fontSize = 18.sp,
+                                        S.episode(ep.number, ep.title), color = TextMain, fontSize = 18.sp,
                                         maxLines = 1, overflow = TextOverflow.Ellipsis,
                                     )
                                     ep.plot?.let {
