@@ -9,6 +9,8 @@
     durée (*term*) **1 an** avec le SKU `com.alftv.pro.yearly`, prix **4,99 €**
   - **Accès à vie** : type *Entitlement*, SKU `com.alftv.pro.unlock`, titre « Accès à vie », prix **19,99 €**
 - **Appareils** : Fire TV uniquement (toutes générations récentes)
+- **Langues de l'application** : français, anglais, espagnol, italien, allemand, portugais, arabe
+  (à déclarer dans la console ; une description par langue ci-dessous)
 - **Politique de confidentialité** : lien vers `docs/privacy-policy.md` (voir README)
 
 ## Description courte (FR)
@@ -53,6 +55,96 @@ Quick QR code login from your phone, and live TV pause.
 IMPORTANT: Alf TV Pro IPTV is a player only. It does not include or provide any channels, movies or series.
 You need a subscription from an authorized content provider. The publisher is not affiliated with any
 content provider and does not endorse streaming content without the rights holders' permission.
+
+## Descripción corta (ES)
+Reproductor IPTV rápido y elegante para Fire TV: Xtream Codes y M3U, guía de programación, películas, series y reanudación de la reproducción.
+
+## Descripción larga (ES)
+Alf TV Pro IPTV es un reproductor multimedia diseñado para el mando del Fire TV.
+
+Conecta tu propia suscripción (Xtream Codes o lista M3U) y disfruta de la TV en directo por categorías con logotipos
+y búsqueda, la guía de programación (ahora y después), películas y series, reanudación de la reproducción, favoritos,
+últimos canales vistos, categorías fijadas, varias cuentas y cambio de canal instantáneo.
+
+Conexión rápida con código QR desde tu móvil y pausa del directo.
+
+Prueba gratuita de 7 días y después suscripción anual o acceso de por vida con un solo pago.
+
+IMPORTANTE: Alf TV Pro IPTV es solo un reproductor. No incluye ni ofrece ningún canal, película ni serie.
+Necesitas una suscripción con un proveedor de contenidos autorizado. El editor no está afiliado a ningún
+proveedor de contenidos y no respalda la difusión de contenidos sin la autorización de sus titulares de derechos.
+
+## Descrizione breve (IT)
+Lettore IPTV veloce ed elegante per Fire TV: Xtream Codes e M3U, guida TV, film, serie e ripresa della riproduzione.
+
+## Descrizione lunga (IT)
+Alf TV Pro IPTV è un lettore multimediale pensato per il telecomando Fire TV.
+
+Collega il tuo abbonamento (Xtream Codes o playlist M3U) e goditi la TV in diretta per categorie con loghi
+e ricerca, la guida TV (in onda e a seguire), film e serie, la ripresa della riproduzione, i preferiti,
+gli ultimi canali visti, le categorie fissate, più account e il cambio canale istantaneo.
+
+Accesso rapido con codice QR dal telefono e pausa della diretta.
+
+Prova gratuita di 7 giorni, poi abbonamento annuale o accesso a vita con un unico pagamento.
+
+IMPORTANTE: Alf TV Pro IPTV è solo un lettore. Non include né fornisce alcun canale, film o serie.
+È necessario un abbonamento presso un fornitore di contenuti autorizzato. L'editore non è affiliato ad alcun
+fornitore di contenuti e non avalla la diffusione di contenuti senza l'autorizzazione dei titolari dei diritti.
+
+## Kurzbeschreibung (DE)
+Schneller, eleganter IPTV-Player für Fire TV: Xtream Codes und M3U, Programmführer, Filme, Serien und Fortsetzen der Wiedergabe.
+
+## Ausführliche Beschreibung (DE)
+Alf TV Pro IPTV ist ein Mediaplayer, der für die Fire-TV-Fernbedienung entwickelt wurde.
+
+Verbinde dein eigenes Abo (Xtream Codes oder M3U-Playlist) und genieße Live-TV nach Kategorien mit Logos
+und Suche, einen Programmführer (jetzt und danach), Filme und Serien, das Fortsetzen der Wiedergabe, Favoriten,
+zuletzt gesehene Sender, angeheftete Kategorien, mehrere Konten und sofortiges Umschalten.
+
+Schnellanmeldung per QR-Code über dein Handy und Pause im Live-TV.
+
+7 Tage kostenlos testen, danach Jahresabo oder lebenslanger Zugang mit einer einmaligen Zahlung.
+
+WICHTIG: Alf TV Pro IPTV ist ausschließlich ein Player. Die App enthält und liefert keine Sender, Filme oder Serien.
+Du benötigst ein Abo bei einem autorisierten Inhalteanbieter. Der Herausgeber ist mit keinem Inhalteanbieter
+verbunden und unterstützt keine Verbreitung von Inhalten ohne Zustimmung der Rechteinhaber.
+
+## Descrição curta (PT)
+Leitor IPTV rápido e elegante para Fire TV: Xtream Codes e M3U, guia de programação, filmes, séries e retoma da reprodução.
+
+## Descrição longa (PT)
+O Alf TV Pro IPTV é um leitor multimédia concebido para o comando da Fire TV.
+
+Ligue a sua própria subscrição (Xtream Codes ou lista M3U) e aproveite a TV em direto por categorias com logótipos
+e pesquisa, o guia de programação (agora e a seguir), filmes e séries, a retoma da reprodução, favoritos,
+últimos canais vistos, categorias fixadas, várias contas e mudança de canal instantânea.
+
+Ligação rápida por código QR a partir do telemóvel e pausa do direto.
+
+Teste gratuito de 7 dias e depois subscrição anual ou acesso vitalício com um único pagamento.
+
+IMPORTANTE: o Alf TV Pro IPTV é apenas um leitor. Não inclui nem fornece nenhum canal, filme ou série.
+Precisa de uma subscrição junto de um fornecedor de conteúdos autorizado. O editor não está afiliado a nenhum
+fornecedor de conteúdos e não apoia a difusão de conteúdos sem a autorização dos titulares de direitos.
+
+## الوصف المختصر (AR)
+مشغّل IPTV سريع وأنيق لأجهزة Fire TV: يدعم Xtream Codes وM3U، مع دليل البرامج والأفلام والمسلسلات واستئناف التشغيل.
+
+## الوصف الكامل (AR)
+Alf TV Pro IPTV مشغّل وسائط مصمَّم للاستخدام بجهاز التحكم عن بُعد الخاص بـ Fire TV.
+
+اربط اشتراكك الخاص (Xtream Codes أو قائمة تشغيل M3U) واستمتع بالبث المباشر مصنّفًا حسب الفئات مع الشعارات
+والبحث، ودليل البرامج (الآن والتالي)، والأفلام والمسلسلات، واستئناف التشغيل، والمفضلة، وآخر القنوات التي شاهدتها،
+والفئات المثبّتة، وتعدّد الحسابات، والتنقّل الفوري بين القنوات.
+
+تسجيل دخول سريع برمز QR من هاتفك، وإمكانية إيقاف البث المباشر مؤقتًا.
+
+فترة تجريبية مجانية لمدة 7 أيام، ثم اشتراك سنوي أو وصول مدى الحياة بدفعة واحدة.
+
+مهم: Alf TV Pro IPTV مشغّل فقط. لا يحتوي على أي قنوات أو أفلام أو مسلسلات ولا يوفّرها.
+يلزمك اشتراك لدى مزوّد محتوى مرخَّص. الناشر غير مرتبط بأي مزوّد محتوى ولا يؤيّد بثّ المحتوى
+دون إذن أصحاب الحقوق.
 
 ## Visuels (dossier `store-assets/`)
 | Fichier | Usage dans la console Amazon |
